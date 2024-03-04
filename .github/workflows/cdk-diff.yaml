@@ -1,7 +1,7 @@
 name: Generate CDK Diff
 on:
   workflow_run:
-    workflows: [quality_assurance]
+    workflows: ['Verify Pull-Request Changes']
     types:
       - completed
 
