@@ -1,0 +1,41 @@
+name: Deploy
+
+on: [pull_request]
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+  pull-requests: write # This is required for creating a pull request
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/oidc-gha-deployment
+          role-session-name: github-action
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Run cdk deploy
+        uses: youyo/aws-cdk-github-actions@v2
+        env:
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          cdk_subcommand: 'deploy'
+          cdk_args: '--require-approval never'
+          actions_comment: true
