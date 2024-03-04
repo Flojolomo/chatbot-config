@@ -1,5 +1,6 @@
 name: Generate CDK Diff
 on:
+  push:
   workflow_run:
     workflows: ['Verify Pull-Request Changes']
     types:
