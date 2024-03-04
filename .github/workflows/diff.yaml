@@ -2,7 +2,7 @@ name: Diff
 
 on:
   workflow_run:
-    workflows: ['quality-assurance']
+    workflows: ['Verify Pull-Request']
     branches: [main]
     types:
       - completed
