@@ -19,11 +19,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Merge main
-        run: |
-          git fetch origin main
-          git merge origin/main
-
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
