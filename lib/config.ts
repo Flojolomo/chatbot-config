@@ -5,5 +5,4 @@ export const config = {
     region: env.get('AWS_REGION').required().asString(),
     account: env.get('AWS_ACCOUNT_ID').required().asString(),
   },
-  },
 };
