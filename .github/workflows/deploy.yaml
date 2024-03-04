@@ -25,9 +25,9 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/oidc-gha-deployment
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/oidc-gha-deployment
           role-session-name: github-action
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Run cdk deploy
         uses: youyo/aws-cdk-github-actions@v2
