@@ -1,4 +1,4 @@
-name: Deploy
+name: Diff
 
 on: [pull_request]
 
@@ -8,7 +8,7 @@ permissions:
   pull-requests: write # This is required for creating a pull request
 
 jobs:
-  Deploy:
+  Diff:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,9 +34,10 @@ jobs:
           role-session-name: github-action
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Run cdk deploy
+      - name: Run cdk diff
         uses: youyo/aws-cdk-github-actions@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          cdk_subcommand: 'deploy'
-          cdk_args: '--require-approval never'
+          cdk_subcommand: 'diff'
           actions_comment: true
