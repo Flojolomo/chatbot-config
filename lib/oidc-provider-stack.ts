@@ -10,7 +10,7 @@ import { Construct } from 'constructs';
  * https://www.npmjs.com/package/aws-cdk-github-oidc
  */
 export class OidcProviderStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const provider = new GithubActionsIdentityProvider(this, 'github-provider');
