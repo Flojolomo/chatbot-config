@@ -10,9 +10,29 @@ jobs:
   quality-assurance:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Merge main
+        run: |
+          git fetch origin main
+          git merge origin/main
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Compile
         run: yarn build
+
       - name: Lint
         run: yarn lint
+
       - name: Test
         run: yarn test
