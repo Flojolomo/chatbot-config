@@ -14,3 +14,6 @@ jobs:
       - uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: github.base_ref == 'main'
+        uses: ./.github/workflows/quality-assurance.yaml
