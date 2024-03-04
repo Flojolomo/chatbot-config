@@ -9,6 +9,7 @@ permissions:
 
 env:
   AWS_REGION: eu-central-1
+  AWS_ACCOUNT_ID: 767397940951
 
 jobs:
   Deploy:
@@ -28,12 +29,12 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::1234567890:role/oidc-gha-role
-          role-session-name: samplerolesession
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/oidc-gha-deployment
+          role-session-name: github-action
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Run cdk diff
         uses: youyo/aws-cdk-github-actions@v2
         with:
-          cdk_subcommand: "diff"
+          cdk_subcommand: 'diff'
           actions_comment: true
