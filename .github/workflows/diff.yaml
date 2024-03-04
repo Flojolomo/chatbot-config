@@ -1,6 +1,11 @@
 name: Diff
 
-on: [pull_request]
+on:
+  workflow_run:
+    workflows: ['VerifyPR']
+    branches: [main]
+    types:
+      - completed
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -10,6 +15,7 @@ permissions:
 jobs:
   Diff:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
