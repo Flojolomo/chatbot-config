@@ -11,7 +11,7 @@ import { Construct } from 'constructs';
  */
 export class OidcProviderStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    		super(scope, id, props);
 
     const provider = new GithubActionsIdentityProvider(this, 'github-provider');
 
