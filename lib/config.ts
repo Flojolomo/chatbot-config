@@ -2,7 +2,7 @@ import * as env from 'env-var';
 
 export const config = {
   aws: {
-    account: '767397940951',
-    region: 'eu-central-1',
+    region: env.get('AWS_REGION').required().asString(),
+    account: env.get('AWS_ACCOUNT_ID').required().asString()
   },
 };
