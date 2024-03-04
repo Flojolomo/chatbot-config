@@ -1,7 +1,9 @@
 name: Verify Pull-Request
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ['Verify Pull-Request Title']
+    types:
+      - completed
 
 permissions:
   pull-requests: read

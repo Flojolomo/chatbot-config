@@ -3,7 +3,6 @@ name: Diff
 on:
   workflow_run:
     workflows: ['Verify Pull-Request']
-    branches: [main]
     types:
       - completed
 
