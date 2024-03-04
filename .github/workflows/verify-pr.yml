@@ -1,6 +1,9 @@
 name: Verify Pull-Request
 on: [pull_request]
 
+permissions:
+  pull-requests: write
+
 jobs:
   VerifyPR:
     runs-on: ubuntu-latest
