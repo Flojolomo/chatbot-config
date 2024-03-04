@@ -5,6 +5,9 @@ import {
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
+/**
+ * https://www.npmjs.com/package/aws-cdk-github-oidc
+ */
 export class OidcProviderStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
