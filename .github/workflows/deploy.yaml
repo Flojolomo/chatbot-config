@@ -39,9 +39,16 @@ jobs:
         with:
           cdk_subcommand: 'diff'
           actions_comment: true
-      - name: Comment on PR
-        uses: unsplash/comment-on-pr@v1.2.0
+      
+      - name: Post Comment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          msg: "CDK deployment complete. 🚀"
+        run: |
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          COMMENT_URL=$(jq --raw-output .pull_request.comments_url "$GITHUB_EVENT_PATH")
+          COMMENT_BODY="Deployment has been completed 🚀"
+
+          curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"body\": \"$COMMENT_BODY\"}" \
+              "$COMMENT_URL"
