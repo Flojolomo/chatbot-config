@@ -4,6 +4,7 @@ on:
     workflows: ['Verify Pull-Request Title']
     types:
       - completed
+  workflow_call:
 
 permissions:
   pull-requests: read
