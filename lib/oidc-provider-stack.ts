@@ -25,9 +25,13 @@ export class OidcProviderStack extends cdk.Stack {
     new iam.ManagedPolicy(this, 'cdk-deploy-policy', {
       roles: [deploymentRole],
       statements: [
-        new iam.PolicyStatement({ actions: ['sts:AssumeRole'], resources: [`arn:aws:iam::${this.account}:role/cdk-*`], effect: iam.Effect.ALLOW }),
+        new iam.PolicyStatement({
+          actions: ['sts:AssumeRole'],
+          resources: [`arn:aws:iam::${this.account}:role/cdk-*`],
+          effect: iam.Effect.ALLOW
+        })
       ]
-    })
+    });
 
     new cdk.CfnOutput(this, 'deployment-role-arn', {
       value: deploymentRole.roleArn
