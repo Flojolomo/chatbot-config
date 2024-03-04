@@ -36,6 +36,7 @@ jobs:
 
       - name: Run cdk diff
         uses: youyo/aws-cdk-github-actions@v2
+        if: github.base_ref == 'main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
