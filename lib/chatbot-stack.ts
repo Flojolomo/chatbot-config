@@ -14,6 +14,8 @@ interface ChatbotStackProps extends cdk.StackProps {
 }
 
 export class ChatbotStack extends cdk.Stack {
+  public readonly notificationTopic: sns.Topic;
+
   public constructor(scope: Construct, id: string, props: ChatbotStackProps) {
     super(scope, id, props);
 
@@ -26,5 +28,7 @@ export class ChatbotStack extends cdk.Stack {
       notificationTopics: [chatbotTopic],
       logRetention: logs.RetentionDays.TWO_WEEKS,
     });
+
+    this.notificationTopic = chatbotTopic;
   }
 }
