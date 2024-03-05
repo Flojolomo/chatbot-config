@@ -20,13 +20,13 @@ export class ConfigRuleStack extends cdk.Stack {
 
     this.setUpConfigService();
 
-    new config.CloudFormationStackNotificationCheck(
-      this,
-      'cloudformation-stack-notification',
-      {
-        topics: props.cloudformationNotificationTopics,
-      },
-    );
+    // new config.CloudFormationStackNotificationCheck(
+    //   this,
+    //   'cloudformation-stack-notification',
+    //   {
+    //     topics: props.cloudformationNotificationTopics,
+    //   },
+    // );
   }
 
   private createConfigBucket(role: iam.IRole): s3.IBucket {
@@ -69,7 +69,7 @@ export class ConfigRuleStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('config.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName(
-          'service-role/AWSConfigRole',
+          'service-role/AWS_ConfigRole',
         ),
       ],
     });
@@ -78,26 +78,39 @@ export class ConfigRuleStack extends cdk.Stack {
   private createConfigRecorder(
     role: iam.IRole,
   ): config.CfnConfigurationRecorder {
-    return new config.CfnConfigurationRecorder(this, 'config-recorder', {
-      roleArn: role.roleArn,
-      recordingGroup: {
-        allSupported: true,
+    const configRecorder = new config.CfnConfigurationRecorder(
+      this,
+      'config-recorder',
+      {
+        roleArn: role.roleArn,
+        recordingGroup: {
+          allSupported: true,
+        },
       },
-    });
+    );
+
+    configRecorder.addDependency(role.node.defaultChild as cdk.CfnResource);
+    return configRecorder;
+  }
+
+  private createDeliveryChannel(
+    configRecorder: config.CfnConfigurationRecorder,
+    bucket: s3.IBucket,
+  ): void {
+    const deliveryChannel = new config.CfnDeliveryChannel(
+      this,
+      'config=delivery-channel',
+      {
+        s3BucketName: bucket.bucketName,
+      },
+    );
+    configRecorder.addDependency(deliveryChannel);
   }
 
   private setUpConfigService(): void {
     const role = this.createRoleForConfigService();
     const configRecorder = this.createConfigRecorder(role);
     const configBucket = this.createConfigBucket(role);
-
-    const deliveryChannel = new config.CfnDeliveryChannel(
-      this,
-      'config=delivery-channel',
-      {
-        s3BucketName: configBucket.bucketName,
-      },
-    );
-    configRecorder.addDependency(deliveryChannel);
+    this.createDeliveryChannel(configRecorder, configBucket);
   }
 }
