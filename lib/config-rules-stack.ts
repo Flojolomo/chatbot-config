@@ -30,7 +30,7 @@ export class ConfigRuleStack extends cdk.Stack {
   }
 
   private createConfigBucket(role: iam.IRole): s3.IBucket {
-    const bucket = new s3.Bucket(this, 'ConfigBucket');
+    const bucket = new s3.Bucket(this, 'config-bucket');
 
     // Attaches the AWSConfigBucketPermissionsCheck policy statement.
     bucket.addToResourcePolicy(
@@ -75,8 +75,10 @@ export class ConfigRuleStack extends cdk.Stack {
     });
   }
 
-  private createConfigRecorder(role: iam.IRole): void {
-    new config.CfnConfigurationRecorder(this, 'ConfigRecorder', {
+  private createConfigRecorder(
+    role: iam.IRole,
+  ): config.CfnConfigurationRecorder {
+    return new config.CfnConfigurationRecorder(this, 'config-recorder', {
       roleArn: role.roleArn,
       recordingGroup: {
         allSupported: true,
@@ -86,11 +88,16 @@ export class ConfigRuleStack extends cdk.Stack {
 
   private setUpConfigService(): void {
     const role = this.createRoleForConfigService();
-    this.createConfigRecorder(role);
+    const configRecorder = this.createConfigRecorder(role);
     const configBucket = this.createConfigBucket(role);
 
-    new config.CfnDeliveryChannel(this, 'ConfigDeliveryChannel', {
-      s3BucketName: configBucket.bucketName,
-    });
+    const deliveryChannel = new config.CfnDeliveryChannel(
+      this,
+      'config=delivery-channel',
+      {
+        s3BucketName: configBucket.bucketName,
+      },
+    );
+    configRecorder.addDependency(deliveryChannel);
   }
 }
