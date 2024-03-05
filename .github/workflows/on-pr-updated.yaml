@@ -1,7 +1,5 @@
 name: Verify Pull-Request Changes
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+on: [pull_request]
 
 permissions:
   pull-requests: read
@@ -18,6 +16,7 @@ jobs:
   quality_assurance:
     name: Quality Assurance
     runs-on: ubuntu-latest
+    needs: verify_pr_title
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,3 +44,15 @@ jobs:
 
       - name: Test
         run: yarn test
+
+  generate_diff:
+    needs: quality_assurance
+    if: ${{ github.event.pull_request.merged == false && github.event.pull_request.base.ref == 'main' }}
+    permissions:
+      contents: read
+      id-token: write # This is required for requesting the JWT
+      pull-requests: write # This is required for creating a pull request
+    secrets: inherit
+    uses: ./.github/workflows/cdk-diff.yaml
+    with:
+      ref: ${{ github.sha }}
