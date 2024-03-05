@@ -7,10 +7,6 @@ on:
       - main
 
   workflow_dispatch:
-    inputs:
-      ref:
-        type: string
-        required: true
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -22,7 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
+        if: ${{ github.event_name }} == 'push'
         uses: actions/checkout@v4
+
+      - name: Checkout
+        if: ${{ github.event_name }} == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_dispatch.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
