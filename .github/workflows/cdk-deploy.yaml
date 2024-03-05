@@ -1,10 +1,15 @@
 name: Deploy
 
 on:
-  # TODO On Version created
   push:
     branches:
       - main
+
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        required: true
 
 permissions:
   id-token: write # This is required for requesting the JWT
