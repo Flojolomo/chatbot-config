@@ -16,6 +16,13 @@ jobs:
     name: Generate CDK Diff
     runs-on: ubuntu-latest
     steps:
+      - name: Log
+        run: |
+          echo {{ github.event.workflow_run.pull_request.head.sha }}
+          echo {{ github.event.workflow_run}}
+          echo {{ github.event.workflow_run.pull_request }}
+          echo {{ github.event.workflow_run.pull_request.head }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
