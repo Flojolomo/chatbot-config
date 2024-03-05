@@ -20,13 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name  }} == 'push'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Checkout
-        if: ${{ github.event_name == 'workflow_call' }}
+        if: ${{ github.event_name }} == 'workflow_call'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
