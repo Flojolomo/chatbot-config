@@ -6,6 +6,12 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        required: true
+
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
@@ -39,6 +45,10 @@ jobs:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ vars.AWS_REGION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          SLACK_CHANNEL_CONFIGURATION_NAME: ${{ secrets.SLACK_CHANNEL_CONFIGURATION_NAME }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_WORKSPACE_ID: ${{ secrets.SLACK_WORKSPACE_ID }}
         with:
           cdk_subcommand: 'deploy'
           cdk_args: '--require-approval never'
