@@ -1,7 +1,5 @@
 name: Verify Pull-Request Changes
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+on: [pull_request]
 
 permissions:
   pull-requests: read
