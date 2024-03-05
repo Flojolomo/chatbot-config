@@ -45,6 +45,21 @@ jobs:
       - name: Test
         run: yarn test
 
+  log:
+    name: Log
+    runs-on: ubuntu-latest
+    needs: quality_assurance
+    steps:
+      - name: Log
+        run: |
+          echo "${{ toJson(github.event.pull_request) }}"
+      - name: Log
+        run: |
+          echo "${{ toJson(github.event.pull_request.base) }}"
+      - name: Log
+        run: |
+          echo "${{ toJson(github.event.pull_request.base.sha) }}"
+
   generate_diff:
     needs: quality_assurance
     if: ${{ github.event.pull_request.merged == false && github.event.pull_request.base.ref == 'main' }}
