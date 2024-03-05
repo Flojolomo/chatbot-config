@@ -46,16 +46,6 @@ jobs:
         run: yarn test
 
   generate_diff:
-    name: Generate CDK Diff
-    runs-on: ubuntu-latest
-    needs: quality_assurance
-    if: ${{ github.event.pull_request.base.ref }} == 'main'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: ./.github/workflows/cdk-diff.yaml
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+    uses: ./.github/workflows/cdk-diff.yaml
+    with:
+      ref: ${{ github.event.pull_request.base.sha }}
