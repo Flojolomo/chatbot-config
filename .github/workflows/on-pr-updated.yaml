@@ -13,40 +13,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  quality_assurance:
-    name: Quality Assurance
-    runs-on: ubuntu-latest
+  ci:
+    secrets: inherit
     needs: verify_pr_title
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Merge main
-        run: |
-          git fetch origin main
-          git merge origin/main
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Compile
-        run: yarn build
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Test
-        run: yarn test
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yaml
+    with:
+      ref: ${{ github.sha }}
 
   generate_diff:
-    needs: quality_assurance
+    needs: ci
     if: ${{ github.event.pull_request.merged == false && github.event.pull_request.base.ref == 'main' }}
     permissions:
       contents: read
