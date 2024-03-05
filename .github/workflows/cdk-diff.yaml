@@ -35,6 +35,8 @@ jobs:
 
       - name: Merge main
         run: |
+          git config --global user.email "github-action-user@bot.com"
+          git config --global user.name "GitHub Action Bot"
           git fetch origin main
           git merge origin/main
 

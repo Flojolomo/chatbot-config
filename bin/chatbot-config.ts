@@ -4,20 +4,25 @@ import * as cdk from 'aws-cdk-lib';
 import { OidcProviderStack } from '../lib/oidc-provider-stack';
 import { config } from '../lib/config';
 import { ChatbotStack } from '../lib/chatbot-stack';
+import { ConfigRuleStack } from '../lib/config-rules-stack';
 
 const app = new cdk.App();
 
+const env = {
+  region: config.aws.region,
+  account: config.aws.account,
+};
+
 new OidcProviderStack(app, 'OidcProviderStack', {
-  env: {
-    region: config.aws.region,
-    account: config.aws.account,
-  },
+  env,
 });
 
-new ChatbotStack(app, 'ChatbotStack', {
-  env: {
-    region: config.aws.region,
-    account: config.aws.account,
-  },
+const { notificationTopic } = new ChatbotStack(app, 'ChatbotStack', {
+  env,
   slack: config.chatbot.slack,
+});
+
+new ConfigRuleStack(app, 'ConfigRuleStack', {
+  env,
+  cloudformationNotificationTopics: [notificationTopic],
 });
