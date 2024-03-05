@@ -14,7 +14,6 @@ permissions:
 jobs:
   generate_diff:
     name: Generate CDK Diff
-    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -45,7 +44,6 @@ jobs:
 
       - name: Run cdk diff
         uses: youyo/aws-cdk-github-actions@v2
-        if: github.base_ref == 'main'
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ vars.AWS_REGION }}
