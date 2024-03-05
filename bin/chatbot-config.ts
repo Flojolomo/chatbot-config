@@ -8,21 +8,21 @@ import { ConfigRuleStack } from '../lib/config-rules-stack';
 
 const app = new cdk.App();
 
+const env = {
+  region: config.aws.region,
+  account: config.aws.account,
+};
+
 new OidcProviderStack(app, 'OidcProviderStack', {
-  env: {
-    region: config.aws.region,
-    account: config.aws.account,
-  },
+  env,
 });
 
 const { notificationTopic } = new ChatbotStack(app, 'ChatbotStack', {
-  env: {
-    region: config.aws.region,
-    account: config.aws.account,
-  },
+  env,
   slack: config.chatbot.slack,
 });
 
 new ConfigRuleStack(app, 'ConfigRuleStack', {
+  env,
   cloudformationNotificationTopics: [notificationTopic],
 });
