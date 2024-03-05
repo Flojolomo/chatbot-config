@@ -45,7 +45,7 @@ jobs:
         run: yarn test
 
   generate_diff:
-    name: Quality Assurance
+    name: Generate CDK Diff
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.base.ref }} == 'main'
     steps:
