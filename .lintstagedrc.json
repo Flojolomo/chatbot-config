@@ -1,0 +1,5 @@
+{
+  "*.yaml": "prettier --write",
+  "*.json": "prettier --write",
+  "*.ts": "yarn lint:fix"
+}

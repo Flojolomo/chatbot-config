@@ -1,6 +1,6 @@
 import {
   GithubActionsIdentityProvider,
-  GithubActionsRole
+  GithubActionsRole,
 } from 'aws-cdk-github-oidc';
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -19,7 +19,7 @@ export class OidcProviderStack extends cdk.Stack {
       roleName: 'oidc-gha-deployment', // the role name
       provider: provider, // reference into the OIDC provider
       owner: 'Flojolomo', // your repository owner (organization or user) name
-      repo: 'chatbot-config' // your repository name (without the owner name)
+      repo: 'chatbot-config', // your repository name (without the owner name)
     });
 
     new iam.ManagedPolicy(this, 'cdk-deploy-policy', {
@@ -28,13 +28,13 @@ export class OidcProviderStack extends cdk.Stack {
         new iam.PolicyStatement({
           actions: ['sts:AssumeRole'],
           resources: [`arn:aws:iam::${this.account}:role/cdk-*`],
-          effect: iam.Effect.ALLOW
-        })
-      ]
+          effect: iam.Effect.ALLOW,
+        }),
+      ],
     });
 
     new cdk.CfnOutput(this, 'deployment-role-arn', {
-      value: deploymentRole.roleArn
+      value: deploymentRole.roleArn,
     });
   }
 }

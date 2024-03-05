@@ -1,9 +1,9 @@
-name: Deploy
-
-on: 
-  push:
-    branches:
-      - main
+name: Generate CDK Diff
+on:
+  workflow_run:
+    workflows: ['Verify Pull-Request Changes']
+    types:
+      - completed
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -11,16 +11,24 @@ permissions:
   pull-requests: write # This is required for creating a pull request
 
 jobs:
-  Deploy:
+  generate_diff:
+    name: Generate CDK Diff
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Merge main
+        run: |
+          git fetch origin main
+          git merge origin/main
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
@@ -32,13 +40,13 @@ jobs:
           role-session-name: github-action
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Run cdk deploy
+      - name: Run cdk diff
         uses: youyo/aws-cdk-github-actions@v2
+        if: github.base_ref == 'main'
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ vars.AWS_REGION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          cdk_subcommand: 'deploy'
-          cdk_args: '--require-approval never'
+          cdk_subcommand: 'diff'
           actions_comment: true
