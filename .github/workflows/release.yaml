@@ -1,11 +1,12 @@
 name: Release
 on:
-  workflow_run:
-    workflows: ['CI']
-    types:
-      - completed
-    branches:
-      - main
+  # https://semantic-release.gitbook.io/semantic-release/support/faq#can-i-use-semantic-release-to-publish-non-javascript-packages
+#   workflow_run:
+#     workflows: ['CI']
+#     types:
+#       - completed
+#     branches:
+#       - main
 
 permissions:
   contents: read
