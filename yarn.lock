@@ -2405,8 +2405,10 @@ __metadata:
     env-var: "npm:^7.4.1"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
+    eslint-plugin-cyclomatic-complexity: "npm:^2.0.11"
     eslint-plugin-prettier: "npm:^5.1.3"
     eslint-plugin-solid: "npm:^0.13.1"
+    eslint-plugin-sonarjs: "npm:^0.24.0"
     eslint-plugin-unused-imports: "npm:^3.1.0"
     husky: "npm:^9.0.11"
     jest: "npm:^29.7.0"
@@ -3095,6 +3097,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-cyclomatic-complexity@npm:^2.0.11":
+  version: 2.0.11
+  resolution: "eslint-plugin-cyclomatic-complexity@npm:2.0.11"
+  peerDependencies:
+    eslint: ^8.42.0
+  checksum: 10c0/d38a805a4856bf1358ac07f38cf7e49c3c9fdf13ae14f66a3b29394ee6fd4aa386db199f74b45b995b69a1a9f90043b6bec4a2e9fcf3abf0639967c8d8fb454c
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-prettier@npm:^5.1.3":
   version: 5.1.3
   resolution: "eslint-plugin-prettier@npm:5.1.3"
@@ -3127,6 +3138,15 @@ __metadata:
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
   checksum: 10c0/2bbae0580260047461e3859e9a7f90544effa4fe1114de076d183780b3730bd8b07516d2bbb7d9f829cdad9cf86353a3db5dbd7a9e2c36943bd674d89d893f3d
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-sonarjs@npm:^0.24.0":
+  version: 0.24.0
+  resolution: "eslint-plugin-sonarjs@npm:0.24.0"
+  peerDependencies:
+    eslint: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
+  checksum: 10c0/b27f45ec33af8e3962309106e5564eaae45ea83873fbf2796175dd85b675b8042bef0c35535efb5778f598d8ca91a1d5683ca22b36599481e3b827c621ba8a50
   languageName: node
   linkType: hard
 

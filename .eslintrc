@@ -1,17 +1,26 @@
 {
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "prettier", "solid", "unused-imports"],
+  "plugins": [
+    "@typescript-eslint",
+    "prettier",
+    "solid",
+    "unused-imports",
+    "sonarjs",
+  ],
   "extends": [
+    "plugin:sonarjs/recommended",
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier"
+    "prettier",
   ],
   "rules": {
     "no-console": 2, // Means warning
     "prettier/prettier": 2, // Means error
     "@typescript-eslint/explicit-member-accessibility": 2,
     "no-unused-vars": "warn", // or "@typescript-eslint/no-unused-vars": "off",
-    "unused-imports/no-unused-imports": "error"
-  }
+    "unused-imports/no-unused-imports": "error",
+    "sonarjs/cognitive-complexity": ["error", 5],
+    "complexity": ["error", { "max": 7 }],
+  },
 }
