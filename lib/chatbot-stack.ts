@@ -3,6 +3,7 @@ import * as chatbot from 'aws-cdk-lib/aws-chatbot';
 
 import { Construct } from 'constructs';
 import * as sns from 'aws-cdk-lib/aws-sns';
+import * as logs from 'aws-cdk-lib/aws-logs';
 
 interface ChatbotStackProps extends cdk.StackProps {
   slack: {
@@ -23,6 +24,7 @@ export class ChatbotStack extends cdk.Stack {
       slackChannelId: props.slack.channelId,
       slackWorkspaceId: props.slack.workspaceId,
       notificationTopics: [chatbotTopic],
+      logRetention: logs.RetentionDays.TWO_WEEKS,
     });
   }
 }
