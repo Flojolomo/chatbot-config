@@ -71,6 +71,7 @@ jobs:
       contents: read
       id-token: write # This is required for requesting the JWT
       pull-requests: write # This is required for creating a pull request
+    secrets: inherit
     uses: ./.github/workflows/cdk-diff.yaml
     with:
       ref: ${{ github.sha }}
