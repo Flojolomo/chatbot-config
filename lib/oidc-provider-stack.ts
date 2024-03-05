@@ -15,13 +15,28 @@ export class OidcProviderStack extends cdk.Stack {
 
     const provider = new GithubActionsIdentityProvider(this, 'github-provider');
 
-    const deploymentRole = new GithubActionsRole(this, 'deployment-role', {
+    const deploymentRole = this.createRole(provider);
+    this.createPermissionsForCdkDeployment(deploymentRole);
+
+    new cdk.CfnOutput(this, 'deployment-role-arn', {
+      value: deploymentRole.roleArn,
+    });
+  }
+
+  private createRole(
+    provider: GithubActionsIdentityProvider,
+  ): GithubActionsRole {
+    return new GithubActionsRole(this, 'deployment-role', {
       roleName: 'oidc-gha-deployment', // the role name
       provider: provider, // reference into the OIDC provider
       owner: 'Flojolomo', // your repository owner (organization or user) name
       repo: 'chatbot-config', // your repository name (without the owner name)
     });
+  }
 
+  private createPermissionsForCdkDeployment(
+    deploymentRole: GithubActionsRole,
+  ): void {
     new iam.ManagedPolicy(this, 'cdk-deploy-policy', {
       roles: [deploymentRole],
       statements: [
@@ -31,10 +46,6 @@ export class OidcProviderStack extends cdk.Stack {
           effect: iam.Effect.ALLOW,
         }),
       ],
-    });
-
-    new cdk.CfnOutput(this, 'deployment-role-arn', {
-      value: deploymentRole.roleArn,
     });
   }
 }
