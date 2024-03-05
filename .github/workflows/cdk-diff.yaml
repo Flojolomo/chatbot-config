@@ -49,9 +49,9 @@ jobs:
           AWS_REGION: ${{ vars.AWS_REGION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          SLACK_CHANNEL_CONFIGURATION_NAME: ${{ vars.SLACK_CHANNEL_CONFIGURATION_NAME }}
-          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
-          SLACK_WORKSPACE_ID: ${{ vars.SLACK_WORKSPACE_ID }}
+          SLACK_CHANNEL_CONFIGURATION_NAME: ${{ secrets.SLACK_CHANNEL_CONFIGURATION_NAME }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_WORKSPACE_ID: ${{ secrets.SLACK_WORKSPACE_ID }}
 
         with:
           cdk_subcommand: 'diff'
