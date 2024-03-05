@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Log
         run: |
-          echo "${{ toJson(github) }} && echo ${{ github.head_ref }}"
+          echo ${{ github.head.sha }} && echo "${{ toJson(github) }} && echo ${{ github.head_ref }}"
 
       - name: Log
         run: |
@@ -73,4 +73,4 @@ jobs:
       pull-requests: write # This is required for creating a pull request
     uses: ./.github/workflows/cdk-diff.yaml
     with:
-      ref: ${{ github.head_ref }}
+      ref: ${{ github.head.sha }}
