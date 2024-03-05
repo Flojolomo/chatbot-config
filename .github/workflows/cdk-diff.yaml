@@ -1,10 +1,10 @@
 name: Generate CDK Diff
 on:
-  workflow_run:
-    # TODO - no using the right reference
-    workflows: ['Verify Pull-Request Changes']
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -17,17 +17,10 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - name: Log
-        run: |
-          echo {{ github.event.workflow_run.pull_request.head.sha }}
-          echo {{ github.event.workflow_run}}
-          echo {{ github.event.workflow_run.pull_request }}
-          echo {{ github.event.workflow_run.pull_request.head }}
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.pull_request.head.sha }}
+          ref: ${{ inputs.ref }}
           fetch-depth: 0
 
       - name: Setup Node.js

@@ -45,3 +45,17 @@ jobs:
 
       - name: Test
         run: yarn test
+
+  generate_diff:
+    name: Quality Assurance
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.base.ref }} == 'main'
+    steps:
+       - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+       - uses: ./.github/workflows/cdk-diff
+         with: 
+           ref: ${{ github.event.pull_request.head.sha }}
