@@ -46,6 +46,10 @@ jobs:
         run: yarn test
 
   generate_diff:
+    permissions:
+      contents: read
+      id-token: write # This is required for requesting the JWT
+      pull-requests: write # This is required for creating a pull request
     uses: ./.github/workflows/cdk-diff.yaml
     with:
       ref: ${{ github.event.pull_request.base.sha }}
