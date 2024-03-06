@@ -94,27 +94,24 @@ export class ConfigRuleStack extends cdk.Stack {
     });
   }
 
-  private createDeliveryChannel(
-    configRecorder: config.CfnConfigurationRecorder,
-    bucket: s3.IBucket,
-  ): void {
+  private createDeliveryChannel(bucket: s3.IBucket): {
+    deliveryChannel: config.CfnDeliveryChannel;
+  } {
     const deliveryChannel = new config.CfnDeliveryChannel(
       this,
-      'config=delivery-channel',
+      'config-delivery-channel',
       {
         s3BucketName: bucket.bucketName,
       },
     );
-    configRecorder.addDependency(deliveryChannel);
+
+    return { deliveryChannel };
   }
 
   private setUpConfigService(): void {
     const role = this.createRoleForConfigService();
     const configBucket = this.createConfigBucket(role);
     this.createConfigRecorder(role);
-
-    new config.CfnDeliveryChannel(this, 'config-delivery-channel', {
-      s3BucketName: configBucket.bucketName,
-    });
+    this.createDeliveryChannel(configBucket);
   }
 }
