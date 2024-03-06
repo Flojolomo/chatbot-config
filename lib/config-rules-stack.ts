@@ -123,6 +123,30 @@ export class ConfigRuleStack extends cdk.Stack {
       },
     );
 
+    const remediationRole = new iam.Role(
+      this,
+      'cloudformation-stack-notification-remediation-role',
+      {
+        assumedBy: new iam.ServicePrincipal('ssm.amazonaws.com'),
+        inlinePolicies: {
+          setSnsTopicPolicy: new iam.PolicyDocument({
+            statements: [
+              new iam.PolicyStatement({
+                actions: ['sns:Subscribe', 'sns:ListSubscriptionsByTopic'],
+                resources: cloudformationNotificationTopics.map(
+                  (topic) => topic.topicArn,
+                ),
+              }),
+              new iam.PolicyStatement({
+                actions: ['ssm:SendCommand'],
+                resources: ['*'],
+              }),
+            ],
+          }),
+        },
+      },
+    );
+
     const remediation = new config.CfnRemediationConfiguration(
       this,
       'cloudformation-stack-notification-remediation',
@@ -132,6 +156,11 @@ export class ConfigRuleStack extends cdk.Stack {
         targetType: 'SSM_DOCUMENT',
         parameters: {
           StackName: {
+            AutomationAssumeRole: {
+              StaticValue: {
+                Values: [remediationRole.roleArn],
+              },
+            },
             ResourceValue: {
               Value: 'RESOURCE_ID',
             },
