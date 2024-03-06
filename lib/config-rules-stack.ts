@@ -135,7 +135,7 @@ export class ConfigRuleStack extends cdk.Stack {
                 sid: 'CloudFormationPermissions',
                 actions: [
                   'cloudformation:DescribeStacks',
-                  ' cloudformation:UpdateStack',
+                  'cloudformation:UpdateStack',
                 ],
                 resources: ['*'],
               }),
