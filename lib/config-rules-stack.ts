@@ -111,7 +111,7 @@ export class ConfigRuleStack extends cdk.Stack {
   private setUpConfigService(): void {
     const role = this.createRoleForConfigService();
     const configBucket = this.createConfigBucket(role);
-    // const configRecorder = this.createConfigRecorder(role);
+    this.createConfigRecorder(role);
     // configRecorder.node.addDependency(
     //   role.node.defaultChild as cdk.CfnResource,
     // );
