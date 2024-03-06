@@ -20,13 +20,9 @@ export class ConfigRuleStack extends cdk.Stack {
 
     this.setUpConfigService();
 
-    new config.CloudFormationStackNotificationCheck(
-      this,
-      'cloudformation-stack-notification',
-      {
-        topics: props.cloudformationNotificationTopics,
-      },
-    );
+    this.createConfigRules({
+      cloudformationNotificationTopics: props.cloudformationNotificationTopics,
+    });
   }
 
   private createConfigBucket(role: iam.IRole): s3.IBucket {
@@ -77,7 +73,7 @@ export class ConfigRuleStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('config.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName(
-          'service-role/AWSConfigRole',
+          'service-role/AWS_ConfigRole',
         ),
       ],
     });
@@ -94,20 +90,40 @@ export class ConfigRuleStack extends cdk.Stack {
     });
   }
 
+  private createConfigRules({
+    cloudformationNotificationTopics,
+  }: {
+    cloudformationNotificationTopics: sns.ITopic[];
+  }): config.IRule[] {
+    return [
+      new config.CloudFormationStackNotificationCheck(
+        this,
+        'cloudformation-stack-notification',
+        {
+          topics: cloudformationNotificationTopics,
+        },
+      ),
+    ];
+  }
+
+  private createDeliveryChannel(bucket: s3.IBucket): {
+    deliveryChannel: config.CfnDeliveryChannel;
+  } {
+    const deliveryChannel = new config.CfnDeliveryChannel(
+      this,
+      'config-delivery-channel',
+      {
+        s3BucketName: bucket.bucketName,
+      },
+    );
+
+    return { deliveryChannel };
+  }
+
   private setUpConfigService(): void {
     const role = this.createRoleForConfigService();
-    // const configRecorder = this.createConfigRecorder(role);
-    // const configBucket = this.createConfigBucket(role);
-
-    this.createConfigBucket(role);
-
-    // const deliveryChannel = new config.CfnDeliveryChannel(
-    //   this,
-    //   'config=delivery-channel',
-    //   {
-    //     s3BucketName: configBucket.bucketName,
-    //   },
-    // );
-    // configRecorder.addDependency(deliveryChannel);
+    const configBucket = this.createConfigBucket(role);
+    this.createConfigRecorder(role);
+    this.createDeliveryChannel(configBucket);
   }
 }
