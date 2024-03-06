@@ -20,13 +20,9 @@ export class ConfigRuleStack extends cdk.Stack {
 
     this.setUpConfigService();
 
-    // new config.CloudFormationStackNotificationCheck(
-    //   this,
-    //   'cloudformation-stack-notification',
-    //   {
-    //     topics: props.cloudformationNotificationTopics,
-    //   },
-    // );
+    this.createConfigRules({
+      cloudformationNotificationTopics: props.cloudformationNotificationTopics,
+    });
   }
 
   private createConfigBucket(role: iam.IRole): s3.IBucket {
@@ -92,6 +88,22 @@ export class ConfigRuleStack extends cdk.Stack {
         allSupported: true,
       },
     });
+  }
+
+  private createConfigRules({
+    cloudformationNotificationTopics,
+  }: {
+    cloudformationNotificationTopics: sns.ITopic[];
+  }): config.IRule[] {
+    return [
+      new config.CloudFormationStackNotificationCheck(
+        this,
+        'cloudformation-stack-notification',
+        {
+          topics: cloudformationNotificationTopics,
+        },
+      ),
+    ];
   }
 
   private createDeliveryChannel(bucket: s3.IBucket): {
