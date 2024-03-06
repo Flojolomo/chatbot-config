@@ -5,7 +5,7 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3'; // Import the 's3' module from 'aws-cdk-lib'
-import * as eventTargets from 'aws-cdk-lib/aws-events-targets'; // Import the 's3' module from 'aws-cdk-lib'
+// Import the 's3' module from 'aws-cdk-lib'
 
 interface ConfigRuleStackProps extends cdk.StackProps {
   cloudformationNotificationTopics: sns.ITopic[];
@@ -95,25 +95,45 @@ export class ConfigRuleStack extends cdk.Stack {
 
   private createConfigRules({
     cloudformationNotificationTopics,
-    complianceChangeTarget,
+    // complianceChangeTarget,
   }: {
     cloudformationNotificationTopics: sns.ITopic[];
     complianceChangeTarget: sns.ITopic;
   }): config.IRule[] {
-    const cloudFormationStackNoticiationRule =
-      new config.CloudFormationStackNotificationCheck(
-        this,
-        'cloudformation-stack-notification',
-        {
-          topics: cloudformationNotificationTopics,
-        },
+    const { rule: cloudFormationStackNotificationRule } =
+      this.createCloudFormationStackNotificationRuleWithRemediation(
+        cloudformationNotificationTopics,
       );
 
-    cloudFormationStackNoticiationRule.onComplianceChange('compliance-change', {
-      target: new eventTargets.SnsTopic(complianceChangeTarget),
-    });
+    return [cloudFormationStackNotificationRule];
+  }
 
-    return [cloudFormationStackNoticiationRule];
+  // eslint-disable-next-line max-lines-per-function
+  private createCloudFormationStackNotificationRuleWithRemediation(
+    cloudformationNotificationTopics: sns.ITopic[],
+  ): {
+    rule: config.CloudFormationStackNotificationCheck;
+    remediation: config.CfnRemediationConfiguration;
+  } {
+    const rule = new config.CloudFormationStackNotificationCheck(
+      this,
+      'cloudformation-stack-notification',
+      {
+        topics: cloudformationNotificationTopics,
+      },
+    );
+
+    const remediation = new config.CfnRemediationConfiguration(
+      this,
+      'cloudformation-stack-notification-remediation',
+      {
+        configRuleName: rule.configRuleName,
+        targetId: 'AWS-EnableCloudFormationStackSNSNotification',
+        targetType: 'SSM_DOCUMENT',
+      },
+    );
+
+    return { rule: rule, remediation };
   }
 
   private createDeliveryChannel(bucket: s3.IBucket): {
