@@ -5,9 +5,11 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3'; // Import the 's3' module from 'aws-cdk-lib'
+import * as eventTargets from 'aws-cdk-lib/aws-events-targets'; // Import the 's3' module from 'aws-cdk-lib'
 
 interface ConfigRuleStackProps extends cdk.StackProps {
   cloudformationNotificationTopics: sns.ITopic[];
+  complianceChangeTarget: sns.ITopic;
 }
 
 export class ConfigRuleStack extends cdk.Stack {
@@ -22,6 +24,7 @@ export class ConfigRuleStack extends cdk.Stack {
 
     this.createConfigRules({
       cloudformationNotificationTopics: props.cloudformationNotificationTopics,
+      complianceChangeTarget: props.complianceChangeTarget,
     });
   }
 
@@ -92,18 +95,25 @@ export class ConfigRuleStack extends cdk.Stack {
 
   private createConfigRules({
     cloudformationNotificationTopics,
+    complianceChangeTarget,
   }: {
     cloudformationNotificationTopics: sns.ITopic[];
+    complianceChangeTarget: sns.ITopic;
   }): config.IRule[] {
-    return [
+    const cloudFormationStackNoticiationRule =
       new config.CloudFormationStackNotificationCheck(
         this,
         'cloudformation-stack-notification',
         {
           topics: cloudformationNotificationTopics,
         },
-      ),
-    ];
+      );
+
+    cloudFormationStackNoticiationRule.onComplianceChange('compliance-change', {
+      target: new eventTargets.SnsTopic(complianceChangeTarget),
+    });
+
+    return [cloudFormationStackNoticiationRule];
   }
 
   private createDeliveryChannel(bucket: s3.IBucket): {
