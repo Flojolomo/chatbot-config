@@ -137,10 +137,6 @@ export class ConfigRuleStack extends cdk.Stack {
                   (topic) => topic.topicArn,
                 ),
               }),
-              new iam.PolicyStatement({
-                actions: ['ssm:SendCommand'],
-                resources: ['*'],
-              }),
             ],
           }),
         },
