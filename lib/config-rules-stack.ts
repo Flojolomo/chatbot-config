@@ -152,12 +152,12 @@ export class ConfigRuleStack extends cdk.Stack {
         targetType: 'SSM_DOCUMENT',
         automatic: true,
         parameters: {
-          StackName: {
-            AutomationAssumeRole: {
-              StaticValue: {
-                Values: [remediationRole.roleArn],
-              },
+          AutomationAssumeRole: {
+            StaticValue: {
+              Values: [remediationRole.roleArn],
             },
+          },
+          StackName: {
             ResourceValue: {
               Value: 'RESOURCE_ID',
             },
