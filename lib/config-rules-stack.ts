@@ -112,13 +112,9 @@ export class ConfigRuleStack extends cdk.Stack {
     const role = this.createRoleForConfigService();
     const configBucket = this.createConfigBucket(role);
     this.createConfigRecorder(role);
-    // configRecorder.node.addDependency(
-    //   role.node.defaultChild as cdk.CfnResource,
-    // );
 
     new config.CfnDeliveryChannel(this, 'config-delivery-channel', {
       s3BucketName: configBucket.bucketName,
     });
-    // configRecorder.addDependency(deliveryChannel);
   }
 }
