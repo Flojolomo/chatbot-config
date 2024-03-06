@@ -86,19 +86,12 @@ export class ConfigRuleStack extends cdk.Stack {
   private createConfigRecorder(
     role: iam.IRole,
   ): config.CfnConfigurationRecorder {
-    const configRecorder = new config.CfnConfigurationRecorder(
-      this,
-      'config-recorder',
-      {
-        roleArn: role.roleArn,
-        recordingGroup: {
-          allSupported: true,
-        },
+    return new config.CfnConfigurationRecorder(this, 'config-recorder', {
+      roleArn: role.roleArn,
+      recordingGroup: {
+        allSupported: true,
       },
-    );
-
-    configRecorder.addDependency(role.node.defaultChild as cdk.CfnResource);
-    return configRecorder;
+    });
   }
 
   private createDeliveryChannel(
@@ -117,7 +110,11 @@ export class ConfigRuleStack extends cdk.Stack {
 
   private setUpConfigService(): void {
     const role = this.createRoleForConfigService();
-    // const configRecorder = this.createConfigRecorder(role);
+    const configRecorder = this.createConfigRecorder(role);
+    configRecorder.node.addDependency(
+      role.node.defaultChild as cdk.CfnResource,
+    );
+
     // const configBucket = this.createConfigBucket(role);
 
     this.createConfigBucket(role);
