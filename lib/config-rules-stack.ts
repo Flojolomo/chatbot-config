@@ -31,7 +31,15 @@ export class ConfigRuleStack extends cdk.Stack {
 
   private createConfigBucket(role: iam.IRole): s3.IBucket {
     const bucket = new s3.Bucket(this, 'config-bucket');
+    this.grantReadBucketAclPermission(bucket, role);
+    this.grantPutObjectPermission(bucket, role);
+    return bucket;
+  }
 
+  private grantReadBucketAclPermission(
+    bucket: s3.IBucket,
+    role: iam.IRole,
+  ): void {
     // Attaches the AWSConfigBucketPermissionsCheck policy statement.
     bucket.addToResourcePolicy(
       new iam.PolicyStatement({
@@ -41,7 +49,9 @@ export class ConfigRuleStack extends cdk.Stack {
         actions: ['s3:GetBucketAcl'],
       }),
     );
+  }
 
+  private grantPutObjectPermission(bucket: s3.IBucket, role: iam.IRole): void {
     // Attaches the AWSConfigBucketDelivery policy statement.
     bucket.addToResourcePolicy(
       new iam.PolicyStatement({
@@ -60,8 +70,6 @@ export class ConfigRuleStack extends cdk.Stack {
         },
       }),
     );
-
-    return bucket;
   }
 
   private createRoleForConfigService(): iam.IRole {
@@ -109,8 +117,18 @@ export class ConfigRuleStack extends cdk.Stack {
 
   private setUpConfigService(): void {
     const role = this.createRoleForConfigService();
-    const configRecorder = this.createConfigRecorder(role);
-    const configBucket = this.createConfigBucket(role);
-    this.createDeliveryChannel(configRecorder, configBucket);
+    // const configRecorder = this.createConfigRecorder(role);
+    // const configBucket = this.createConfigBucket(role);
+
+    this.createConfigBucket(role);
+
+    // const deliveryChannel = new config.CfnDeliveryChannel(
+    //   this,
+    //   'config=delivery-channel',
+    //   {
+    //     s3BucketName: configBucket.bucketName,
+    //   },
+    // );
+    // configRecorder.addDependency(deliveryChannel);
   }
 }
