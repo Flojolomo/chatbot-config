@@ -154,6 +154,7 @@ export class ConfigRuleStack extends cdk.Stack {
         configRuleName: rule.configRuleName,
         targetId: 'AWS-EnableCloudFormationStackSNSNotification',
         targetType: 'SSM_DOCUMENT',
+        automatic: true,
         parameters: {
           StackName: {
             AutomationAssumeRole: {
