@@ -107,7 +107,7 @@ mainSteps:
       UsePreviousTemplate: true
       NotificationARNs: '{{ CheckCfnSnsLimits.NotificationArnList }}'
       Capabilities:
-        - CAPABILITY_IAM
+        - CAPABILITY_NAMED_IAM
   - description: |
       ## VerificationCfnSnsNotification
       This step verifies that SNS notifications have been enabled on the CloudFormation stack.
