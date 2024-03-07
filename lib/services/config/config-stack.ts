@@ -5,14 +5,14 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3'; // Import the 's3' module from 'aws-cdk-lib'
-import * as eventTargets from 'aws-cdk-lib/aws-events-targets'; // Import the 's3' module from 'aws-cdk-lib'
+import { CloudFormationStackNotification } from './cloudformation-stack-notification';
 
 interface ConfigRuleStackProps extends cdk.StackProps {
-  cloudformationNotificationTopics: sns.ITopic[];
+  cloudformationStackNotificationTopics: sns.ITopic[];
   complianceChangeTarget: sns.ITopic;
 }
 
-export class ConfigRuleStack extends cdk.Stack {
+export class ConfigStack extends cdk.Stack {
   public constructor(
     scope: Construct,
     id: string,
@@ -23,7 +23,8 @@ export class ConfigRuleStack extends cdk.Stack {
     this.setUpConfigService();
 
     this.createConfigRules({
-      cloudformationNotificationTopics: props.cloudformationNotificationTopics,
+      cloudformationStackNotificationTopics:
+        props.cloudformationStackNotificationTopics,
       complianceChangeTarget: props.complianceChangeTarget,
     });
   }
@@ -94,26 +95,19 @@ export class ConfigRuleStack extends cdk.Stack {
   }
 
   private createConfigRules({
-    cloudformationNotificationTopics,
+    cloudformationStackNotificationTopics,
     complianceChangeTarget,
   }: {
-    cloudformationNotificationTopics: sns.ITopic[];
+    cloudformationStackNotificationTopics: sns.ITopic[];
     complianceChangeTarget: sns.ITopic;
   }): config.IRule[] {
-    const cloudFormationStackNoticiationRule =
-      new config.CloudFormationStackNotificationCheck(
-        this,
-        'cloudformation-stack-notification',
-        {
-          topics: cloudformationNotificationTopics,
-        },
-      );
+    const cloudFormationStackNotification = new CloudFormationStackNotification(
+      this,
+      'cloudformation-stack-notification',
+      { cloudformationStackNotificationTopics, complianceChangeTarget },
+    );
 
-    cloudFormationStackNoticiationRule.onComplianceChange('compliance-change', {
-      target: new eventTargets.SnsTopic(complianceChangeTarget),
-    });
-
-    return [cloudFormationStackNoticiationRule];
+    return [cloudFormationStackNotification.rule];
   }
 
   private createDeliveryChannel(bucket: s3.IBucket): {

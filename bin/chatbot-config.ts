@@ -4,7 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { OidcProviderStack } from '../lib/oidc-provider-stack';
 import { config } from '../lib/config';
 import { ChatbotStack } from '../lib/chatbot-stack';
-import { ConfigRuleStack } from '../lib/config-rules-stack';
+import { ConfigStack } from '../lib/services/config/config-stack';
 
 const app = new cdk.App();
 
@@ -22,8 +22,8 @@ const { notificationTopic } = new ChatbotStack(app, 'ChatbotStack', {
   slack: config.chatbot.slack,
 });
 
-new ConfigRuleStack(app, 'ConfigRuleStack', {
+new ConfigStack(app, 'ConfigRuleStack', {
   env,
-  cloudformationNotificationTopics: [notificationTopic],
+  cloudformationStackNotificationTopics: [notificationTopic],
   complianceChangeTarget: notificationTopic,
 });
