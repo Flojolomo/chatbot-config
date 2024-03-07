@@ -24,6 +24,6 @@ const { notificationTopic } = new ChatbotStack(app, 'ChatbotStack', {
 
 new ConfigStack(app, 'ConfigRuleStack', {
   env,
-  cloudformationNotificationTopics: [notificationTopic],
+  cloudformationStackNotificationTopics: [notificationTopic],
   complianceChangeTarget: notificationTopic,
 });

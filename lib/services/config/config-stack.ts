@@ -5,13 +5,10 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3'; // Import the 's3' module from 'aws-cdk-lib'
-import * as ssm from 'aws-cdk-lib/aws-ssm';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as yaml from 'js-yaml';
+import { CloudFormationStackNotification } from './cloudformation-stack-notification';
 
 interface ConfigRuleStackProps extends cdk.StackProps {
-  cloudformationNotificationTopics: sns.ITopic[];
+  cloudformationStackNotificationTopics: sns.ITopic[];
   complianceChangeTarget: sns.ITopic;
 }
 
@@ -26,7 +23,8 @@ export class ConfigStack extends cdk.Stack {
     this.setUpConfigService();
 
     this.createConfigRules({
-      cloudformationNotificationTopics: props.cloudformationNotificationTopics,
+      cloudformationStackNotificationTopics:
+        props.cloudformationStackNotificationTopics,
       complianceChangeTarget: props.complianceChangeTarget,
     });
   }
@@ -97,127 +95,18 @@ export class ConfigStack extends cdk.Stack {
   }
 
   private createConfigRules({
-    cloudformationNotificationTopics,
-    // complianceChangeTarget,
+    cloudformationStackNotificationTopics,
   }: {
-    cloudformationNotificationTopics: sns.ITopic[];
+    cloudformationStackNotificationTopics: sns.ITopic[];
     complianceChangeTarget: sns.ITopic;
   }): config.IRule[] {
-    const { rule: cloudFormationStackNotificationRule } =
-      this.createCloudFormationStackNotificationRuleWithRemediation(
-        cloudformationNotificationTopics,
-      );
-
-    return [cloudFormationStackNotificationRule];
-  }
-
-  // eslint-disable-next-line max-lines-per-function
-  private createCloudFormationStackNotificationRuleWithRemediation(
-    cloudformationNotificationTopics: sns.ITopic[],
-  ): {
-    rule: config.CloudFormationStackNotificationCheck;
-    remediation: config.CfnRemediationConfiguration;
-  } {
-    const rule = new config.CloudFormationStackNotificationCheck(
+    const cloudFormationStackNotification = new CloudFormationStackNotification(
       this,
       'cloudformation-stack-notification',
-      {
-        topics: cloudformationNotificationTopics,
-      },
+      { cloudformationStackNotificationTopics },
     );
 
-    const documentContent = fs.readFileSync(
-      path.join(
-        __dirname,
-        'ssm-documents',
-        'EnableCloudFormationStackSNSNotification-WithIam.yaml',
-      ),
-      'utf8',
-    );
-
-    new ssm.CfnDocument(
-      this,
-      'cloudformation-stack-notification-remediation-document-with-iam',
-      {
-        name: 'EnableCloudFormationStackSNSNotification-WithIam',
-        content: yaml.load(documentContent),
-        documentFormat: 'YAML',
-        documentType: 'Automation',
-      },
-    );
-
-    const remediationRole = new iam.Role(
-      this,
-      'cloudformation-stack-notification-remediation-role',
-      {
-        assumedBy: new iam.ServicePrincipal('ssm.amazonaws.com'),
-        inlinePolicies: {
-          setSnsTopicPolicy: new iam.PolicyDocument({
-            statements: [
-              new iam.PolicyStatement({
-                sid: 'CDKToolkitUpdatePermissions',
-                actions: [
-                  'iam:GetRole',
-                  'ssm:GetParameters',
-                  'kms:CreateKey',
-                  'kms:DescribeKey',
-                ],
-                resources: ['*'],
-              }),
-              new iam.PolicyStatement({
-                sid: 'SnsPermissions',
-                actions: ['sns:Publish'],
-                resources: cloudformationNotificationTopics.map(
-                  (topic) => topic.topicArn,
-                ),
-              }),
-              new iam.PolicyStatement({
-                sid: 'CloudFormationPermissions',
-                actions: [
-                  'cloudformation:DescribeStacks',
-                  'cloudformation:UpdateStack',
-                ],
-                resources: ['*'],
-              }),
-            ],
-          }),
-        },
-      },
-    );
-
-    const remediation = new config.CfnRemediationConfiguration(
-      this,
-      'cloudformation-stack-notification-remediation',
-      {
-        configRuleName: rule.configRuleName,
-        targetId: 'EnableCloudFormationStackSNSNotification-WithIam',
-        targetType: 'SSM_DOCUMENT',
-        automatic: true,
-        maximumAutomaticAttempts: 5,
-        retryAttemptSeconds: 60,
-        parameters: {
-          AutomationAssumeRole: {
-            StaticValue: {
-              Values: [remediationRole.roleArn],
-            },
-          },
-          StackName: {
-            ResourceValue: {
-              Value: 'RESOURCE_ID',
-            },
-          },
-          NotificationArn: {
-            StaticValue: {
-              Values: cloudformationNotificationTopics.map(
-                (topic) => topic.topicArn,
-              ),
-            },
-          },
-        },
-      },
-    );
-
-    return { rule: rule, remediation };
+    return [cloudFormationStackNotification.rule];
   }
 
   private createDeliveryChannel(bucket: s3.IBucket): {
