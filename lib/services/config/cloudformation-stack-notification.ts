@@ -25,14 +25,17 @@ export class CloudFormationStackNotification extends Construct {
         props.cloudformationStackNotificationTopics,
     });
 
+    const documentName = 'EnableCloudFormationStackSNSNotification-WithIam';
     this.createSsmRemediationDocument({
-      documentFileName: 'EnableCloudFormationStackSNSNotification-WithIam.yaml',
+      documentName,
+      documentExtension: 'yaml',
     });
 
     const remediationRole = this.createRoleForRemediation();
     this.createRemediationConfiguration({
       cloudformationNotificationTopics:
         props.cloudformationStackNotificationTopics,
+      documentName,
       remediationRole,
       rule,
     });
@@ -53,10 +56,12 @@ export class CloudFormationStackNotification extends Construct {
   // eslint-disable-next-line max-lines-per-function
   private createRemediationConfiguration({
     cloudformationNotificationTopics,
+    documentName,
     remediationRole,
     rule,
   }: {
     cloudformationNotificationTopics: sns.ITopic[];
+    documentName: string;
     remediationRole: iam.IRole;
     rule: config.CloudFormationStackNotificationCheck;
   }): config.CfnRemediationConfiguration {
@@ -65,7 +70,7 @@ export class CloudFormationStackNotification extends Construct {
       'cloudformation-stack-notification-remediation',
       {
         configRuleName: rule.configRuleName,
-        targetId: 'EnableCloudFormationStackSNSNotification-WithIam',
+        targetId: documentName,
         targetType: 'SSM_DOCUMENT',
         automatic: true,
         maximumAutomaticAttempts: 5,
@@ -123,12 +128,18 @@ export class CloudFormationStackNotification extends Construct {
   }
 
   private createSsmRemediationDocument({
-    documentFileName,
+    documentName,
+    documentExtension,
   }: {
-    documentFileName: string;
+    documentName: string;
+    documentExtension: string;
   }): void {
     const documentContent = fs.readFileSync(
-      path.join(__dirname, 'ssm-documents', documentFileName),
+      path.join(
+        __dirname,
+        'ssm-documents',
+        `${documentName}.${documentExtension}`,
+      ),
       'utf8',
     );
 
@@ -136,8 +147,10 @@ export class CloudFormationStackNotification extends Construct {
       this,
       'cloudformation-stack-notification-remediation-document-with-iam',
       {
-        name: documentFileName,
+        name: documentName,
         content: yaml.load(documentContent),
+        documentType: 'Automation',
+        documentFormat: 'YAML',
       },
     );
   }
