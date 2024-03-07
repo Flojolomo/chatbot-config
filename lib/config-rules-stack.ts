@@ -155,7 +155,12 @@ export class ConfigRuleStack extends cdk.Stack {
             statements: [
               new iam.PolicyStatement({
                 sid: 'PassRole',
-                actions: ['iam:GetRole', 'kms:CreateKey', 'ssm:GetParameters'],
+                actions: [
+                  'iam:GetRole',
+                  'kms:CreateKey',
+                  'ssm:GetParameters',
+                  'kms:DescribeKey',
+                ],
                 resources: ['*'],
               }),
               new iam.PolicyStatement({
