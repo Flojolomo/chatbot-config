@@ -15,7 +15,7 @@ interface ConfigRuleStackProps extends cdk.StackProps {
   complianceChangeTarget: sns.ITopic;
 }
 
-export class ConfigRuleStack extends cdk.Stack {
+export class ConfigStack extends cdk.Stack {
   public constructor(
     scope: Construct,
     id: string,
