@@ -136,7 +136,7 @@ export class ConfigRuleStack extends cdk.Stack {
 
     new ssm.CfnDocument(
       this,
-      'cloudformation-stack-notification-remediation-document',
+      'cloudformation-stack-notification-remediation-document-with-iam',
       {
         name: 'EnableCloudFormationStackSNSNotification-WithIam',
         content: yaml.load(documentContent),
