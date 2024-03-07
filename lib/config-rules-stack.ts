@@ -154,11 +154,11 @@ export class ConfigRuleStack extends cdk.Stack {
           setSnsTopicPolicy: new iam.PolicyDocument({
             statements: [
               new iam.PolicyStatement({
-                sid: 'PassRole',
+                sid: 'CDKToolkitUpdatePermissions',
                 actions: [
                   'iam:GetRole',
-                  'kms:CreateKey',
                   'ssm:GetParameters',
+                  'kms:CreateKey',
                   'kms:DescribeKey',
                 ],
                 resources: ['*'],
