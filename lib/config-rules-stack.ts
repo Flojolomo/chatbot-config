@@ -154,8 +154,8 @@ export class ConfigRuleStack extends cdk.Stack {
           setSnsTopicPolicy: new iam.PolicyDocument({
             statements: [
               new iam.PolicyStatement({
-                sid: 'GetIamRole',
-                actions: ['iam:GetRole'],
+                sid: 'PassRole',
+                actions: ['iam:PassRole'],
                 resources: ['*'],
               }),
               new iam.PolicyStatement({
