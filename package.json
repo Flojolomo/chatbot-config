@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
+    "@types/js-yaml": "^4",
     "@types/node": "20.11.19",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
@@ -42,6 +43,7 @@
     "aws-cdk-github-oidc": "^2.4.1",
     "aws-cdk-lib": "2.131.0",
     "constructs": "^10.0.0",
+    "js-yaml": "^4.1.0",
     "source-map-support": "^0.5.21"
   },
   "engines": {

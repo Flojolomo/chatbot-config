@@ -5,7 +5,10 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3'; // Import the 's3' module from 'aws-cdk-lib'
-// Import the 's3' module from 'aws-cdk-lib'
+import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as yaml from 'js-yaml';
 
 interface ConfigRuleStackProps extends cdk.StackProps {
   cloudformationNotificationTopics: sns.ITopic[];
@@ -120,6 +123,25 @@ export class ConfigRuleStack extends cdk.Stack {
       'cloudformation-stack-notification',
       {
         topics: cloudformationNotificationTopics,
+      },
+    );
+
+    const documentContent = fs.readFileSync(
+      path.join(
+        __dirname,
+        './EnableCloudFormationStackSNSNotification-WithIam.yaml',
+      ),
+      'utf8',
+    );
+
+    new ssm.CfnDocument(
+      this,
+      'cloudformation-stack-notification-remediation-document',
+      {
+        name: 'EnableCloudFormationStackSNSNotification-WithIam',
+        content: yaml.load(documentContent),
+        documentFormat: 'YAML',
+        documentType: 'Automation',
       },
     );
 
