@@ -4,7 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { OidcProviderStack } from '../lib/oidc-provider-stack';
 import { config } from '../lib/config';
 import { ChatbotStack } from '../lib/chatbot-stack';
-import { ConfigRuleStack } from '../lib/config-rules-stack';
+import { ConfigRuleStack } from '../lib/services/config';
 
 const app = new cdk.App();
 

@@ -129,7 +129,8 @@ export class ConfigRuleStack extends cdk.Stack {
     const documentContent = fs.readFileSync(
       path.join(
         __dirname,
-        './EnableCloudFormationStackSNSNotification-WithIam.yaml',
+        'ssm-documents',
+        'EnableCloudFormationStackSNSNotification-WithIam.yaml',
       ),
       'utf8',
     );
