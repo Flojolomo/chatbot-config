@@ -31,7 +31,10 @@ export class CloudFormationStackNotification extends Construct {
       documentExtension: 'yaml',
     });
 
-    const remediationRole = this.createRoleForRemediation();
+    const remediationRole = this.createRoleForRemediation({
+      cloudformationStackNotificationTopics:
+        props.cloudformationStackNotificationTopics,
+    });
     this.createRemediationConfiguration({
       cloudformationNotificationTopics:
         props.cloudformationStackNotificationTopics,
@@ -97,11 +100,17 @@ export class CloudFormationStackNotification extends Construct {
       },
     );
   }
-  private createRoleForRemediation(): iam.IRole {
+  private createRoleForRemediation({
+    cloudformationStackNotificationTopics,
+  }: {
+    cloudformationStackNotificationTopics: sns.ITopic[];
+  }): iam.IRole {
     return new iam.Role(this, 'remediation-role', {
       assumedBy: new iam.ServicePrincipal('ssm.amazonaws.com'),
       inlinePolicies: {
-        updateCdkToolkitStack: this.generatePolicyToUpdateCdkToolkitStack(),
+        updateCdkToolkitStack: this.generatePolicyToUpdateCdkToolkitStack({
+          cloudformationStackNotificationTopics,
+        }),
         updateStacks: this.generatePolicyToUpdateStacks(),
         // updateStacks:
         // setSnsTopicPolicy: new iam.PolicyDocument({
@@ -155,7 +164,11 @@ export class CloudFormationStackNotification extends Construct {
     );
   }
 
-  private generatePolicyToUpdateCdkToolkitStack(): iam.PolicyDocument {
+  private generatePolicyToUpdateCdkToolkitStack({
+    cloudformationStackNotificationTopics,
+  }: {
+    cloudformationStackNotificationTopics: sns.ITopic[];
+  }): iam.PolicyDocument {
     return new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
@@ -169,6 +182,13 @@ export class CloudFormationStackNotification extends Construct {
             'cloudformation:UpdateStack',
           ],
           resources: ['*'],
+        }),
+        new iam.PolicyStatement({
+          sid: 'publishSnsToNotificationTopics',
+          actions: ['sns:Publish'],
+          resources: cloudformationStackNotificationTopics.map(
+            (topic) => topic.topicArn,
+          ),
         }),
       ],
     });
