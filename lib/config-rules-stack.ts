@@ -154,6 +154,13 @@ export class ConfigRuleStack extends cdk.Stack {
           setSnsTopicPolicy: new iam.PolicyDocument({
             statements: [
               new iam.PolicyStatement({
+                sid: 'SnsPermissions',
+                actions: ['sns:Publish'],
+                resources: cloudformationNotificationTopics.map(
+                  (topic) => topic.topicArn,
+                ),
+              }),
+              new iam.PolicyStatement({
                 sid: 'CloudFormationPermissions',
                 actions: [
                   'cloudformation:DescribeStacks',
