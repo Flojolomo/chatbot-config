@@ -150,7 +150,7 @@ export class ConfigRuleStack extends cdk.Stack {
       'cloudformation-stack-notification-remediation',
       {
         configRuleName: rule.configRuleName,
-        targetId: 'AWS-EnableCloudFormationStackSNSNotification',
+        targetId: 'Copy-AWS-EnableCloudFormationStackSNSNotification',
         targetType: 'SSM_DOCUMENT',
         automatic: true,
         maximumAutomaticAttempts: 5,
