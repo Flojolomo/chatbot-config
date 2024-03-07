@@ -6,9 +6,11 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as eventTargets from 'aws-cdk-lib/aws-events-targets';
 
 interface CloudFormationStackNotificationProps {
   cloudformationStackNotificationTopics: sns.ITopic[];
+  complianceChangeTarget: sns.ITopic;
 }
 
 export class CloudFormationStackNotification extends Construct {
@@ -23,6 +25,7 @@ export class CloudFormationStackNotification extends Construct {
     const rule = this.createConfigRule({
       cloudformationNotificationTopics:
         props.cloudformationStackNotificationTopics,
+      complianceChangeTarget: props.complianceChangeTarget,
     });
 
     const documentName = 'EnableCloudFormationStackSNSNotification-WithIam';
@@ -48,12 +51,20 @@ export class CloudFormationStackNotification extends Construct {
 
   private createConfigRule({
     cloudformationNotificationTopics,
+    complianceChangeTarget,
   }: {
     cloudformationNotificationTopics: sns.ITopic[];
+    complianceChangeTarget: sns.ITopic;
   }): config.CloudFormationStackNotificationCheck {
-    return new config.CloudFormationStackNotificationCheck(this, 'rule', {
+    const rule = new config.CloudFormationStackNotificationCheck(this, 'rule', {
       topics: cloudformationNotificationTopics,
     });
+
+    rule.onComplianceChange('compliance-change', {
+      target: new eventTargets.SnsTopic(complianceChangeTarget, {}),
+    });
+
+    return rule;
   }
 
   // eslint-disable-next-line max-lines-per-function

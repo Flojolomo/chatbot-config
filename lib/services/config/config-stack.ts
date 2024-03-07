@@ -96,6 +96,7 @@ export class ConfigStack extends cdk.Stack {
 
   private createConfigRules({
     cloudformationStackNotificationTopics,
+    complianceChangeTarget,
   }: {
     cloudformationStackNotificationTopics: sns.ITopic[];
     complianceChangeTarget: sns.ITopic;
@@ -103,7 +104,7 @@ export class ConfigStack extends cdk.Stack {
     const cloudFormationStackNotification = new CloudFormationStackNotification(
       this,
       'cloudformation-stack-notification',
-      { cloudformationStackNotificationTopics },
+      { cloudformationStackNotificationTopics, complianceChangeTarget },
     );
 
     return [cloudFormationStackNotification.rule];
