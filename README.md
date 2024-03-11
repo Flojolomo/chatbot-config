@@ -19,6 +19,7 @@ To achieve this, some steps are required:
   Questions:
 
 - Can I spin up the chatbot in another region?
+- Datadog Integration, evtl mit Alerts
 
 ## Notes
 
