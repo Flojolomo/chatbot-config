@@ -16,6 +16,8 @@ export class XRayTracingStack extends cdk.Stack {
     new sqs.Queue(this, 'queue', {});
     new lambda.NodejsFunction(this, 'lambda', {});
     new sns.Topic(this, 'topic', {});
-    new dynamodb.Table(this, 'table', {});
+    new dynamodb.Table(this, 'table', {
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+    });
   }
 }
