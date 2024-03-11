@@ -44,7 +44,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Run cdk deploy
-        uses: Flojolomo/aws-cdk-github-actions-for-yarn@v1
+        uses: flojolomo/aws-cdk-github-actions-for-yarn@v1
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ vars.AWS_REGION }}
