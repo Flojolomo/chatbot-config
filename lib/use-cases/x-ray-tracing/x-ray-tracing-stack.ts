@@ -17,14 +17,6 @@ export class XRayTracingStack extends cdk.Stack {
     new events.EventBus(this, 'event-bus', {});
     new sqs.Queue(this, 'queue', {});
 
-    /*
-     * TODO
-     * Installation fails due to missing yarn. The assumption is that
-     * this is caused by the github action that does not have yarn installed
-     *
-     * https://github.com/youyo/aws-cdk-github-actions/blob/master/entrypoint.sh
-     * Adding the installation of corepack & yarn to that script might be worth checking out.
-     **/
     new lambdaNodeJs.NodejsFunction(this, 'lambda', {
       entry: path.join(__dirname, 'lambda', 'handler.ts'),
       environment: {
