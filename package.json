@@ -16,6 +16,7 @@
     "semantic-release": "semantic-release"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.136",
     "@types/jest": "^29.5.12",
     "@types/js-yaml": "^4",
     "@types/node": "20.11.19",
@@ -40,8 +41,13 @@
     "typescript": "~5.3.3"
   },
   "dependencies": {
+    "@aws-lambda-powertools/commons": "^2.0.2",
+    "@aws-lambda-powertools/logger": "^2.0.2",
+    "@aws-lambda-powertools/metrics": "^2.0.2",
+    "@aws-lambda-powertools/tracer": "^2.0.2",
     "aws-cdk-github-oidc": "^2.4.1",
     "aws-cdk-lib": "2.131.0",
+    "aws-lambda": "^1.0.7",
     "constructs": "^10.0.0",
     "js-yaml": "^4.1.0",
     "source-map-support": "^0.5.21"
