@@ -1555,6 +1555,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/js-yaml@npm:^4":
+  version: 4.0.9
+  resolution: "@types/js-yaml@npm:4.0.9"
+  checksum: 10c0/24de857aa8d61526bbfbbaa383aa538283ad17363fcd5bb5148e2c7f604547db36646440e739d78241ed008702a8920665d1add5618687b6743858fae00da211
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.12":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -2395,6 +2402,7 @@ __metadata:
   resolution: "chatbot-config@workspace:."
   dependencies:
     "@types/jest": "npm:^29.5.12"
+    "@types/js-yaml": "npm:^4"
     "@types/node": "npm:20.11.19"
     "@typescript-eslint/eslint-plugin": "npm:^7.1.1"
     "@typescript-eslint/parser": "npm:^7.1.1"
@@ -2412,6 +2420,7 @@ __metadata:
     eslint-plugin-unused-imports: "npm:^3.1.0"
     husky: "npm:^9.0.11"
     jest: "npm:^29.7.0"
+    js-yaml: "npm:^4.1.0"
     lint-staged: "npm:^15.2.2"
     prettier: "npm:^3.2.5"
     semantic-release: "npm:^23.0.2"

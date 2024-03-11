@@ -24,7 +24,7 @@
     "complexity": ["error", { "max": 7 }],
     "max-lines-per-function": [
       "error",
-      { "max": 20, "skipBlankLines": true, "skipComments": true },
+      { "max": 30, "skipBlankLines": true, "skipComments": true },
     ],
   },
 }

@@ -1,0 +1,158 @@
+schemaVersion: '0.3'
+description: |
+  # Document name - AWS-EnableCloudFormationStackSNSNotification
+
+  ## What does this document do?
+  The AWS-EnableCloudFormationStackSNSNotification runbook enables Amazon Simple Notification Service (SNS) using the
+  [UpdateStack](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_UpdateStack.html) API. A Standard
+  SNS Topic can be integrated within a CloudFormation stack to notify stakeholders of any events or changes occurring 
+  with the stack.
+
+  ## Input Parameters
+  * AutomationAssumeRole: (Optional) The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role
+    that allows Systems Manager Automation to perform the actions on your behalf. If no role is specified,
+    Systems Manager Automation uses the permissions of the user that starts this runbook.
+    * Default: ""
+  * StackName: (Required) The ARN or stack name of the CloudFormation stack.
+  * NotificationArn: (Required) Amazon Simple Notification Service topic Amazon Resource Names (ARNs) that 
+    cloudFormation associates with the stack.
+assumeRole: '{{ AutomationAssumeRole }}'
+parameters:
+  AutomationAssumeRole:
+    type: AWS::IAM::Role::Arn
+    description: |
+      (Optional) The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that allows 
+      Systems Manager Automation to perform the actions on your behalf. If no role is specified, Systems Manager 
+      Automation uses the permissions of the user that starts this runbook.
+    default: ''
+  StackName:
+    type: String
+    description: (Required) The ARN or stack name of the CloudFormation stack.
+    allowedPattern: ^[a-zA-Z][a-zA-Z0-9-]{0,254}$|^arn:aws[a-z0-9-]*:cloudformation:[a-z0-9-]+:\d{12}:stack\/[a-zA-Z][a-zA-Z0-9-]{0,254}\/[a-zA-Z0-9-]{1,1017}$
+  NotificationArn:
+    type: StringList
+    allowedPattern: ^arn:aws[a-z0-9\-]*:sns:[a-z0-9\-]+:\d{12}:([\w\-]{1,1024})$
+    minItems: 1
+    maxItems: 5
+    description: |
+      (Required) Amazon Simple Notification Service topic Amazon Resource Names (ARNs) that CloudFormation associates
+      with the stack.
+mainSteps:
+  - description: |
+      ## CheckCfnSnsLimits
+      Validate Parameter values against existing SNS configuration on the CloudFormation stack and create a list of SNS
+      notification topics. There is a maximum limit of 5 SNS Topics for stack notifications.
+      ## Outputs
+      * NotificationArnList: A combined list of existing SNS Notification Arn's to be enabled on the 
+      Cloudformation stack.
+    name: CheckCfnSnsLimits
+    action: aws:executeScript
+    timeoutSeconds: 600
+    nextStep: EnableCfnSnsNotification
+    isEnd: false
+    inputs:
+      Runtime: python3.8
+      Handler: handler
+      InputPayload:
+        StackName: '{{ StackName }}'
+        NotificationArn: '{{ NotificationArn }}'
+      Script: |
+        import boto3
+        import botocore
+
+        def handler(events, context):
+            maximum_allowed = 5
+            cfn_client = boto3.client("cloudformation")
+
+            parameter_stack_arn = events["StackName"]
+            parameter_arns = events["NotificationArn"]
+            parameter_sns_topics_count = len(parameter_arns)
+
+            try: 
+                response = cfn_client.describe_stacks(StackName=parameter_stack_arn)
+            except botocore.exceptions.ClientError as error:
+                raise Exception from error
+
+            existing_sns_topics = response["Stacks"][0]["NotificationARNs"]
+            existing_sns_topics_count = len(existing_sns_topics)
+            sns_topics_count_combined_count = parameter_sns_topics_count + existing_sns_topics_count
+
+            if parameter_sns_topics_count > maximum_allowed:
+                raise Exception(
+                    f"CLOUDFORMATION STACKS ARE LIMITED TO 5 SNS NOTIFICATION ARNS AND {parameter_sns_topics_count}"
+                    " WERE SUBMITTED.")
+
+            if existing_sns_topics_count == maximum_allowed:
+                raise Exception(
+                    "EXISTING SNS ARNS IS AT A MAXIMUM OF 5 AND ADDITIONAL SNS NOTIFICATIONS CANNOT BE ADDED")
+
+            existing_sns_topics.extend(parameter_arns)
+
+            return existing_sns_topics
+    outputs:
+      - Name: NotificationArnList
+        Type: StringList
+        Selector: $.Payload
+  - description: |
+      ## CheckCfnSnsLimits
+      This step enables SNS notifications for an existing CloudFormation stack.
+    name: EnableCfnSnsNotification
+    action: aws:executeAwsApi
+    nextStep: VerificationCfnSnsNotification
+    isEnd: false
+    inputs:
+      Service: cloudformation
+      Api: UpdateStack
+      StackName: '{{ StackName }}'
+      UsePreviousTemplate: true
+      NotificationARNs: '{{ CheckCfnSnsLimits.NotificationArnList }}'
+      Capabilities:
+        - CAPABILITY_NAMED_IAM
+  - description: |
+      ## VerificationCfnSnsNotification
+      This step verifies that SNS notifications have been enabled on the CloudFormation stack.
+      ## Outputs
+      * VerifySnsTopicsResponse: Message with the success/failure of the SNS notifications enabled on 
+      the CloudFormation stack.
+    name: VerificationCfnSnsNotification
+    action: aws:executeScript
+    timeoutSeconds: 600
+    isEnd: true
+    inputs:
+      Runtime: python3.8
+      Handler: handler
+      InputPayload:
+        StackName: '{{ StackName }}'
+        NotificationArnList: '{{ CheckCfnSnsLimits.NotificationArnList }}'
+      Script: |
+        import boto3
+        import botocore
+
+        def handler(events, context):
+
+            parameter_stack_arn = events["StackName"]
+            parameter_arns = events["NotificationArnList"]
+
+            cfn_client = boto3.client("cloudformation")
+            response = cfn_client.describe_stacks(StackName=parameter_stack_arn)
+            try: 
+                response = cfn_client.describe_stacks(StackName=parameter_stack_arn)
+                current_sns_topics = response["Stacks"][0]["NotificationARNs"]
+            except botocore.exceptions.ClientError as error:
+                raise Exception from error
+
+            for topic_arn in parameter_arns:
+                if topic_arn not in current_sns_topics:
+                    raise Exception("FAILED TO VERIFY SNS NOTIFICATIONS ON CLOUDFORMATION "
+                    f"STACK {parameter_stack_arn}")
+
+            success_message = "Verification of SNS Notification Updates successful."
+
+            return { "EnableCloudFormationStackSNSNotification": success_message }
+    outputs:
+      - Name: VerifySnsTopicsResponse
+        Type: String
+        Selector: $.Payload.EnableCloudFormationStackSNSNotification
+outputs:
+  - CheckCfnSnsLimits.NotificationArnList
+  - VerificationCfnSnsNotification.VerifySnsTopicsResponse
