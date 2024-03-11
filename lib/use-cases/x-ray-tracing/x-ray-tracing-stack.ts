@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as apiGateway from 'aws-cdk-lib/aws-apigatewayv2';
 import { Construct } from 'constructs';
 
 export class XRayTracingStack extends cdk.Stack {
@@ -6,6 +7,7 @@ export class XRayTracingStack extends cdk.Stack {
     super(scope, id, props);
 
     // API Gateway
+    new apiGateway.HttpApi(this, 'HttpApi', {});
     // EventBridge
     // SQS
     // Lambda
