@@ -10,7 +10,9 @@ To achieve this, some steps are required:
 2. Create Chatbot in us-east-1 including the sns topic
 3. Set up some stacks to compliant & not compliant and see how it performs
 
-## Ideen
+## Tools & Prerequisites
+
+## Ideas
 
 - Semantic versioning based on commit messages
 - Config rule to enforce topic on cloudformation stack updates
@@ -55,3 +57,5 @@ Host profileB
 --use-previous-template \
 --notification-arns "arn:aws:sns:eu-central-1:XXX:ChatbotStack-chatbottopic9B12A7D0-jQeR3rnjEiYZ" \
 --capabilities CAPABILITY_NAMED_IAM | CAPABILITY_IAM
+
+- When bunding fails with 403 `aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws`
