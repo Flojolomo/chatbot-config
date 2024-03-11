@@ -58,4 +58,8 @@ Host profileB
 --notification-arns "arn:aws:sns:eu-central-1:XXX:ChatbotStack-chatbottopic9B12A7D0-jQeR3rnjEiYZ" \
 --capabilities CAPABILITY_NAMED_IAM | CAPABILITY_IAM
 
-- When bunding fails with 403 `aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws`
+## Troubleshooting
+
+### Docker bundling
+
+When `esbuild` is not installed as dependency, `cdk` defaults to docker bundling. The bundling failed with error messages like `ERROR: failed to solve: public.ecr.aws/sam/build-nodejs20.x: pulling from host public.ecr.aws failed with status code [manifests latest]: 403 Forbidden`. It could be resolved by executing `docker logout public.ecr.aws`. The root cause might be expired credentials or using wrong credentials when using `Rancher Desktop`
