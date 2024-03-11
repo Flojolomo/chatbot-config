@@ -18,6 +18,7 @@ export class XRayTracingStack extends cdk.Stack {
     new sqs.Queue(this, 'queue', {});
 
     new lambdaNodeJs.NodejsFunction(this, 'lambda', {
+      depsLockFilePath: 'yarn.lock',
       entry: path.join(__dirname, 'lambda', 'handler.ts'),
       environment: {
         POWERTOOLS_SERVICE_NAME: 'x-ray-showcase',
