@@ -66,7 +66,16 @@ export class XRayTracingStack extends cdk.Stack {
       eventBus,
     });
 
-    api.root.addMethod('GET', new apigateway.MockIntegration({}));
+    api.root.addMethod(
+      'GET',
+      new apigateway.MockIntegration({
+        integrationResponses: [{ statusCode: '200' }],
+        passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
+        requestTemplates: {
+          'application/json': '{ "statusCode": 200 }',
+        },
+      }),
+    );
 
     // const events = api.root.addResource('event');
     // const options = { methodResponses: [{ statusCode: '200' }] };
