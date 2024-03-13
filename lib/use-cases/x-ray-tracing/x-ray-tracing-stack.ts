@@ -14,6 +14,7 @@ export class XRayTracingStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Only REST APIs support tracing
     const api = new apigatewayv2.HttpApi(this, 'rest-api', {});
 
     const { eventBus } = this.createEventBus();
