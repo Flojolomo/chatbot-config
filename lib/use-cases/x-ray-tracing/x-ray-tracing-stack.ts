@@ -49,6 +49,7 @@ export class XRayTracingStack extends cdk.Stack {
     });
   }
 
+  // eslint-disable-next-line max-lines-per-function
   private forwardPostRequests(
     api: apigateway.IRestApi,
     eventBus: events.IEventBus,
@@ -67,16 +68,36 @@ export class XRayTracingStack extends cdk.Stack {
       eventBus,
     });
 
-    api.root.addMethod(
-      'GET',
-      new apigateway.MockIntegration({
-        integrationResponses: [{ statusCode: '200' }],
-        // passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
-        // requestTemplates: {
-        //   'application/json': '{ "statusCode": 200 }',
-        // },
-      }),
-    );
+    // Define the mock integration response
+    const mockIntegration = new apigateway.MockIntegration({
+      integrationResponses: [
+        {
+          statusCode: '200',
+          responseTemplates: {
+            'application/json': JSON.stringify({
+              message: 'This is a mock response',
+              success: true,
+            }),
+          },
+        },
+      ],
+      requestTemplates: {
+        'application/json': '{"statusCode": 200}',
+      },
+      passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
+    });
+
+    // Define the method response
+    const methodResponse = {
+      statusCode: '200',
+      responseModels: {
+        'application/json': apigateway.Model.EMPTY_MODEL,
+      },
+    };
+
+    api.root.addMethod('GET', mockIntegration, {
+      methodResponses: [methodResponse],
+    });
 
     // const options = { methodResponses: [{ statusCode: '200' }] };
     // api.root.addMethod('POST', eventBridgeIntegration, options);
