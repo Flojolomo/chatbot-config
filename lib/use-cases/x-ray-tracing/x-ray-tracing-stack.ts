@@ -95,6 +95,8 @@ export class XRayTracingStack extends cdk.Stack {
         Detail: '$request.body',
         EventBusName: eventBusArn,
       },
+      payloadFormatVersion: '1.0',
+      timeoutInMillis: 5000,
     });
   }
 
