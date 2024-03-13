@@ -14,10 +14,10 @@ export class XRayTracingStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // const api = new apigatewayv2.HttpApi(this, 'rest-api', {});
+    const api = new apigatewayv2.HttpApi(this, 'rest-api', {});
 
-    this.createEventBus();
-    // this.forwardPostRequests(api, eventBus);
+    const { eventBus } = this.createEventBus();
+    this.forwardPostRequests(api, eventBus);
 
     // new sqs.Queue(this, 'queue', {});
 
