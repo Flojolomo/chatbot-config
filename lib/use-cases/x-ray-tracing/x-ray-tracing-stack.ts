@@ -70,15 +70,17 @@ export class XRayTracingStack extends cdk.Stack {
       'GET',
       new apigateway.MockIntegration({
         integrationResponses: [{ statusCode: '200' }],
-        passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
-        requestTemplates: {
-          'application/json': '{ "statusCode": 200 }',
-        },
+        // passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
+        // requestTemplates: {
+        //   'application/json': '{ "statusCode": 200 }',
+        // },
       }),
     );
 
-    // const events = api.root.addResource('event');
     // const options = { methodResponses: [{ statusCode: '200' }] };
+    // api.root.addMethod('POST', eventBridgeIntegration, options);
+
+    // const events = api.root.addResource('event');
 
     // events.addMethod('POST', eventBridgeIntegration, options);
   }
