@@ -1,16 +1,15 @@
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
-// Import the missing sqs module
 import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
-// import * as apigatewayv2 from 'aws-cdk-lib/aws-apigateway';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as eventTargets from 'aws-cdk-lib/aws-events-targets';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 
 // Import the missing iam module
-
+// TODO open API Spec
+//aws.amazon.com/blogs/compute/using-aws-x-ray-tracing-with-amazon-eventbridge/
 export class XRayTracingStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -62,15 +61,15 @@ export class XRayTracingStack extends cdk.Stack {
     eventBus.grantPutEventsTo(apiGatewayRole);
 
     // Integration options for connecting the API Gateway to EventBridge
-    const eventBridgeIntegration = this.createIntegration({
+    this.createIntegration({
       role: apiGatewayRole,
       eventBus,
     });
 
-    const events = api.root.addResource('event');
-    const options = { methodResponses: [{ statusCode: '200' }] };
+    // const events = api.root.addResource('event');
+    // const options = { methodResponses: [{ statusCode: '200' }] };
 
-    events.addMethod('POST', eventBridgeIntegration, options);
+    // events.addMethod('POST', eventBridgeIntegration, options);
   }
 
   private createEventBus(): {
