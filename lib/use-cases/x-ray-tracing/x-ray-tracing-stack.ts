@@ -1,53 +1,48 @@
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
-import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as sqs from 'aws-cdk-lib/aws-sqs'; // Import the missing sqs module
-import * as sns from 'aws-cdk-lib/aws-sns';
+// Import the missing sqs module
 import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import path = require('path');
-import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+// import * as apigatewayv2 from 'aws-cdk-lib/aws-apigateway';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import * as eventTargets from 'aws-cdk-lib/aws-events-targets';
+import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 // Import the missing iam module
 
 export class XRayTracingStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const eventBus = new events.EventBus(this, 'event-bus', {});
-    const api = new apigateway.RestApi(this, 'rest-api', {
-      deployOptions: {
-        tracingEnabled: true,
-      },
-    });
+    const api = new apigatewayv2.HttpApi(this, 'rest-api', {});
 
-    this.writePostRequestsTo(api, eventBus);
+    const { eventBus } = this.createEventBus();
+    this.forwardPostRequests(api, eventBus);
 
-    new sqs.Queue(this, 'queue', {});
+    // new sqs.Queue(this, 'queue', {});
 
-    new lambdaNodeJs.NodejsFunction(this, 'lambda', {
-      entry: path.join(__dirname, 'lambda', 'handler.ts'),
-      environment: {
-        POWERTOOLS_SERVICE_NAME: 'x-ray-showcase',
-        POWERTOOLS_TRACE_ENABLED: String(true),
-        POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: String(true),
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: String(true),
-        POWERTOOLS_TRACER_CAPTURE_ERROR: String(true),
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-      },
-      runtime: lambda.Runtime.NODEJS_20_X,
-      tracing: lambda.Tracing.ACTIVE,
-    });
+    // new lambdaNodeJs.NodejsFunction(this, 'lambda', {
+    //   entry: path.join(__dirname, 'lambda', 'handler.ts'),
+    //   environment: {
+    //     POWERTOOLS_SERVICE_NAME: 'x-ray-showcase',
+    //     POWERTOOLS_TRACE_ENABLED: String(true),
+    //     POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: String(true),
+    //     POWERTOOLS_TRACER_CAPTURE_RESPONSE: String(true),
+    //     POWERTOOLS_TRACER_CAPTURE_ERROR: String(true),
+    //     POWERTOOLS_LOG_LEVEL: 'DEBUG',
+    //   },
+    //   runtime: lambda.Runtime.NODEJS_20_X,
+    //   tracing: lambda.Tracing.ACTIVE,
+    // });
 
-    new sns.Topic(this, 'topic', {});
+    // new sns.Topic(this, 'topic', {});
     new dynamodb.Table(this, 'table', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
     });
   }
 
-  private writePostRequestsTo(
-    api: apigateway.IRestApi,
+  private forwardPostRequests(
+    api: apigatewayv2.IHttpApi,
     eventBus: events.IEventBus,
   ) {
     // IAM Role for API Gateway to publish to EventBridge
@@ -60,44 +55,66 @@ export class XRayTracingStack extends cdk.Stack {
 
     // Integration options for connecting the API Gateway to EventBridge
     const eventBridgeIntegration = this.createIntegration(
+      api,
       apiGatewayRole,
       eventBus,
     );
 
-    // Add a POST method to the API Gateway, integrated with EventBridge
-    const resource = api.root.addResource('event');
-    resource.addMethod('POST', eventBridgeIntegration, {
-      methodResponses: [{ statusCode: '200' }],
+    new apigatewayv2.CfnRoute(this, 'event-route', {
+      apiId: api.apiId,
+      routeKey: 'POST /event/',
+      target: `integrations/${eventBridgeIntegration.ref}`,
     });
   }
 
+  private createEventBus(): {
+    eventBus: events.IEventBus;
+    logGroup: logs.LogGroup;
+  } {
+    const eventBus = new events.EventBus(this, 'event-bus', {});
+    const { logGroup } = this.forwardEventsToLogGroup(eventBus);
+
+    return { eventBus, logGroup };
+  }
+
   private createIntegration(
-    apiGatewayRole: iam.IRole,
-    eventBus: events.IEventBus,
-  ): apigateway.AwsIntegration {
-    return new apigateway.AwsIntegration({
-      service: 'events',
-      action: 'PutEvents',
-      options: {
-        credentialsRole: apiGatewayRole,
-        requestTemplates: {
-          'application/json': `{
-            "Entries": [
-              {
-                "Source": "my.source",
-                "DetailType": "myDetailType",
-                "Detail": "$util.escapeJavaScript($input.json('$'))",
-                "EventBusName": "${eventBus.eventBusName}"
-              }
-            ]
-          }`,
-        },
-        integrationResponses: [
-          {
-            statusCode: '200',
-          },
-        ],
+    { apiId }: apigatewayv2.IHttpApi,
+    { roleArn }: iam.IRole,
+    { eventBusArn }: events.IEventBus,
+  ): apigatewayv2.CfnIntegration {
+    return new apigatewayv2.CfnIntegration(this, 'event-bus-integration', {
+      apiId: apiId,
+      integrationType: apigatewayv2.HttpIntegrationType.AWS_PROXY,
+      integrationSubtype:
+        apigatewayv2.HttpIntegrationSubtype.EVENTBRIDGE_PUT_EVENTS,
+      connectionType: apigatewayv2.HttpConnectionType.INTERNET,
+      credentialsArn: roleArn,
+      requestParameters: {
+        Source: 'com.mycompany.$request.path.source',
+        DetailType: '$request.path.detailType',
+        Detail: '$request.body',
+        EventBusName: eventBusArn,
       },
     });
+  }
+
+  private forwardEventsToLogGroup(eventBus: events.EventBus): {
+    logGroup: logs.LogGroup;
+  } {
+    const eventLoggerRule = new events.Rule(this, 'EventLoggerRule', {
+      description: 'Log all events',
+      eventPattern: {
+        region: ['*'],
+      },
+      eventBus: eventBus,
+    });
+
+    const logGroup = new logs.LogGroup(this, 'EventLogGroup', {
+      logGroupName: '/aws/events/MyEventBus',
+    });
+
+    eventLoggerRule.addTarget(new eventTargets.CloudWatchLogGroup(logGroup));
+
+    return { logGroup };
   }
 }
