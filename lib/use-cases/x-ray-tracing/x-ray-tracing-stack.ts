@@ -45,6 +45,7 @@ export class XRayTracingStack extends cdk.Stack {
     // new sns.Topic(this, 'topic', {});
     new dynamodb.Table(this, 'table', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
   }
 
