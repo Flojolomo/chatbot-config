@@ -100,7 +100,9 @@ export class XRayTracingStack extends cdk.Stack {
     });
 
     // const options = { methodResponses: [{ statusCode: '200' }] };
-    // api.root.addMethod('POST', eventBridgeIntegration, options);
+    api.root.addResource('event').addMethod('POST', mockIntegration, {
+      methodResponses: [methodResponse],
+    });
 
     // const events = api.root.addResource('event');
 
