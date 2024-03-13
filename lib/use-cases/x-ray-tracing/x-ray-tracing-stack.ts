@@ -7,7 +7,8 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 // import * as apigatewayv2 from 'aws-cdk-lib/aws-apigateway';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as eventTargets from 'aws-cdk-lib/aws-events-targets';
-import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+
 // Import the missing iam module
 
 export class XRayTracingStack extends cdk.Stack {
@@ -15,7 +16,13 @@ export class XRayTracingStack extends cdk.Stack {
     super(scope, id, props);
 
     // Only REST APIs support tracing
-    const api = new apigatewayv2.HttpApi(this, 'rest-api', {});
+    const api = new apigateway.RestApi(this, 'rest-api', {
+      deploy: true,
+      deployOptions: {
+        tracingEnabled: true,
+      },
+    });
+    // const api = new apigatewayv2.HttpApi(this, 'rest-api', {});
 
     const { eventBus } = this.createEventBus();
     this.forwardPostRequests(api, eventBus);
@@ -43,7 +50,7 @@ export class XRayTracingStack extends cdk.Stack {
   }
 
   private forwardPostRequests(
-    api: apigatewayv2.IHttpApi,
+    api: apigateway.IRestApi,
     eventBus: events.IEventBus,
   ) {
     // IAM Role for API Gateway to publish to EventBridge
@@ -55,17 +62,15 @@ export class XRayTracingStack extends cdk.Stack {
     eventBus.grantPutEventsTo(apiGatewayRole);
 
     // Integration options for connecting the API Gateway to EventBridge
-    const eventBridgeIntegration = this.createIntegration(
-      api,
-      apiGatewayRole,
+    const eventBridgeIntegration = this.createIntegration({
+      role: apiGatewayRole,
       eventBus,
-    );
-
-    new apigatewayv2.CfnRoute(this, 'event-route', {
-      apiId: api.apiId,
-      routeKey: 'POST /event/',
-      target: `integrations/${eventBridgeIntegration.ref}`,
     });
+
+    const events = api.root.addResource('event');
+    const options = { methodResponses: [{ statusCode: '200' }] };
+
+    events.addMethod('POST', eventBridgeIntegration, options);
   }
 
   private createEventBus(): {
@@ -78,26 +83,45 @@ export class XRayTracingStack extends cdk.Stack {
     return { eventBus, logGroup };
   }
 
-  private createIntegration(
-    { apiId }: apigatewayv2.IHttpApi,
-    { roleArn }: iam.IRole,
-    { eventBusArn }: events.IEventBus,
-  ): apigatewayv2.CfnIntegration {
-    return new apigatewayv2.CfnIntegration(this, 'event-bus-integration', {
-      apiId: apiId,
-      integrationType: apigatewayv2.HttpIntegrationType.AWS_PROXY,
-      integrationSubtype:
-        apigatewayv2.HttpIntegrationSubtype.EVENTBRIDGE_PUT_EVENTS,
-      connectionType: apigatewayv2.HttpConnectionType.INTERNET,
-      credentialsArn: roleArn,
-      requestParameters: {
-        Source: 'com.mycompany.$request.path.source',
-        DetailType: '$request.path.detailType',
-        Detail: '$request.body',
-        EventBusName: eventBusArn,
+  // eslint-disable-next-line max-lines-per-function
+  private createIntegration({
+    eventBus,
+    role,
+  }: {
+    role: iam.IRole;
+    eventBus: events.IEventBus;
+  }): apigateway.AwsIntegration {
+    return new apigateway.AwsIntegration({
+      service: 'events',
+      action: 'PutEvents',
+      integrationHttpMethod: 'POST',
+      options: {
+        credentialsRole: role,
+        integrationResponses: [
+          {
+            statusCode: '200',
+            responseTemplates: {
+              'application/json': `{ "requestId": "$context.requestId" }`,
+            },
+          },
+        ],
+        requestTemplates: {
+          'application/x-www-form-urlencoded': `
+        #set($context.requestOverride.header.X-Amz-Target = "AWSEvents.PutEvents")
+        #set($context.requestOverride.header.Content-Type = "application/x-amz-json-1.1")            
+        { 
+          "Entries": [
+            {
+              "Detail": "{\\"message\\": \\"$util.escapeJavaScript($input.body).replaceAll("\\'","'")\\"}",
+              "DetailType": "message",
+              "EventBusName": "${eventBus.eventBusName}",
+              "Source":"cdk.application.api.rest"
+            }
+          ]
+        }
+      `,
+        },
       },
-      payloadFormatVersion: '1.0',
-      timeoutInMillis: 5000,
     });
   }
 
