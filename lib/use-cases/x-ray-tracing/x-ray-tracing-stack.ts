@@ -63,7 +63,7 @@ export class XRayTracingStack extends cdk.Stack {
     eventBus.grantPutEventsTo(apiGatewayRole);
 
     // Integration options for connecting the API Gateway to EventBridge
-    this.createIntegration({
+    const eventBusIntegration = this.createIntegration({
       role: apiGatewayRole,
       eventBus,
     });
@@ -100,7 +100,7 @@ export class XRayTracingStack extends cdk.Stack {
     });
 
     // const options = { methodResponses: [{ statusCode: '200' }] };
-    api.root.addResource('event').addMethod('POST', mockIntegration, {
+    api.root.addResource('event').addMethod('POST', eventBusIntegration, {
       methodResponses: [methodResponse],
     });
 
@@ -142,14 +142,14 @@ export class XRayTracingStack extends cdk.Stack {
           },
         ],
         requestTemplates: {
-          'application/x-www-form-urlencoded': `
+          'application/json': `
         #set($context.requestOverride.header.X-Amz-Target = "AWSEvents.PutEvents")
         #set($context.requestOverride.header.Content-Type = "application/x-amz-json-1.1")            
         { 
           "Entries": [
             {
-              "Detail": "{\\"message\\": \\"$util.escapeJavaScript($input.body).replaceAll("\\'","'")\\"}",
-              "DetailType": "message",
+              "Detail": "$util.escapeJavaScript($input.body)",
+              "DetailType": "request",
               "EventBusName": "${eventBus.eventBusName}",
               "Source":"cdk.application.api.rest"
             }
@@ -164,16 +164,17 @@ export class XRayTracingStack extends cdk.Stack {
   private forwardEventsToLogGroup(eventBus: events.EventBus): {
     logGroup: logs.LogGroup;
   } {
-    const eventLoggerRule = new events.Rule(this, 'EventLoggerRule', {
+    const eventLoggerRule = new events.Rule(this, 'rule', {
       description: 'Log all events',
       eventPattern: {
-        region: ['*'],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        source: [{ prefix: '' }] as any[],
       },
       eventBus: eventBus,
     });
 
-    const logGroup = new logs.LogGroup(this, 'EventLogGroup', {
-      logGroupName: '/aws/events/MyEventBus',
+    const logGroup = new logs.LogGroup(this, 'log-group', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     eventLoggerRule.addTarget(new eventTargets.CloudWatchLogGroup(logGroup));
