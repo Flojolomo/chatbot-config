@@ -12,6 +12,9 @@ import { SQSEvent, SQSRecord } from 'aws-lambda';
 const logger = new Logger({});
 const tracer = new Tracer({});
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+tracer.captureAWS(require('aws-sdk'));
+
 const processor = new BatchProcessor(EventType.SQS);
 
 class Lambda implements LambdaInterface {
