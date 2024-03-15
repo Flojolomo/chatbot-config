@@ -4,20 +4,19 @@ import { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { EventBridgeEvent } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import {
-  CloudWatchEventsClient,
-  PutEventsCommand,
-} from '@aws-sdk/client-cloudwatch-events';
+// import { PutEventsCommand } from '@aws-sdk/client-cloudwatch-events';
 import { v4 } from 'uuid';
+import {
+  EventBridgeClient,
+  PutEventsCommand,
+} from '@aws-sdk/client-eventbridge';
 
 const logger = new Logger({});
 const tracer = new Tracer({});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
-const eventBusClient = tracer.captureAWSv3Client(
-  new CloudWatchEventsClient({}),
-);
+const eventBusClient = tracer.captureAWSv3Client(new EventBridgeClient({}));
 
 class Lambda implements LambdaInterface {
   // Set the log event flag to true

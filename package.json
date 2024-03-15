@@ -50,6 +50,7 @@
     "@aws-lambda-powertools/tracer": "^2.0.2",
     "@aws-sdk/client-cloudwatch-events": "^3.535.0",
     "@aws-sdk/client-dynamodb": "^3.535.0",
+    "@aws-sdk/client-eventbridge": "^3.535.0",
     "aws-cdk-github-oidc": "^2.4.1",
     "aws-cdk-lib": "2.131.0",
     "aws-lambda": "^1.0.7",
