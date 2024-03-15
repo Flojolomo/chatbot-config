@@ -748,6 +748,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@aws-sdk/util-arn-parser@npm:3.535.0":
+  version: 3.535.0
+  resolution: "@aws-sdk/util-arn-parser@npm:3.535.0"
+  dependencies:
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/0061dd01d95187826912903f7a08e5a6d377ce82fcfa91a5a6d1f4343bd51fb32d2cb942612e555f6b85a92e95d55873fce99daef43b2558243efdfe2b27d88a
+  languageName: node
+  linkType: hard
+
 "@aws-sdk/util-endpoints@npm:3.535.0":
   version: 3.535.0
   resolution: "@aws-sdk/util-endpoints@npm:3.535.0"
@@ -3952,6 +3961,7 @@ __metadata:
     "@aws-lambda-powertools/tracer": "npm:^2.0.2"
     "@aws-sdk/client-cloudwatch-events": "npm:^3.535.0"
     "@aws-sdk/client-dynamodb": "npm:^3.535.0"
+    "@aws-sdk/client-eventbridge": "npm:^3.535.0"
     "@types/aws-lambda": "npm:^8.10.136"
     "@types/jest": "npm:^29.5.12"
     "@types/js-yaml": "npm:^4"
@@ -7163,13 +7173,6 @@ __metadata:
     strip-ansi: "npm:^7.1.0"
     wrap-ansi: "npm:^9.0.0"
   checksum: 10c0/e0b3c3401ef49ce3eb17e2f83d644765e4f7988498fc1344eaa4f31ab30e510dcc469a7fb64dc01bd1c8d9237d917598fa677a9818705fb3774c10f6e9d4b27c
-  languageName: node
-  linkType: hard
-
-"loglevel@npm:^1.8.1":
-  version: 1.9.1
-  resolution: "loglevel@npm:1.9.1"
-  checksum: 10c0/152f0501cea367cf998c844a38b19f0b5af555756ad7d8650214a1f8c6a5b045e31b8cf5dae27d28339a061624ce3f618aadb333aed386cac041d6ddc5101a39
   languageName: node
   linkType: hard
 
