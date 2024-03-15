@@ -37,7 +37,7 @@ class Lambda implements LambdaInterface {
 
   private async recordHandler(record: SQSRecord) {
     logger.info('Processing event', { record });
-    dynamodbClient.send(
+    await dynamodbClient.send(
       new PutItemCommand({
         TableName: process.env.TABLE!,
         Item: {
