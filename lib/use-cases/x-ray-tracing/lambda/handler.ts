@@ -4,6 +4,10 @@ import { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { EventBridgeEvent } from 'aws-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import {
+  CloudWatchEventsClient,
+  PutEventsCommand,
+} from '@aws-sdk/client-cloudwatch-events';
 import { v4 } from 'uuid';
 
 const logger = new Logger({});
@@ -11,9 +15,13 @@ const tracer = new Tracer({});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
+const eventBusClient = tracer.captureAWSv3Client(
+  new CloudWatchEventsClient({}),
+);
 
 class Lambda implements LambdaInterface {
   // Set the log event flag to true
+  // eslint-disable-next-line max-lines-per-function
   @tracer.captureLambdaHandler()
   @logger.injectLambdaContext({ logEvent: true })
   public async handler(
@@ -31,6 +39,20 @@ class Lambda implements LambdaInterface {
           id: { S: v4() },
           body: { S: _event.detail! },
         },
+      }),
+    );
+
+    await eventBusClient.send(
+      new PutEventsCommand({
+        Entries: [
+          {
+            Source: 'application.lambda',
+            DetailType: 'transformed',
+            Detail: _event.detail!,
+            EventBusName: 'STRING_VALUE',
+            TraceHeader: 'STRING_VALUE',
+          },
+        ],
       }),
     );
   }

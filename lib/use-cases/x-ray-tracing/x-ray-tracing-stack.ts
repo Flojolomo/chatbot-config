@@ -39,7 +39,12 @@ export class XRayTracingStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    const lambdaFunction = this.createLambdaFunction({ queue, topic, table });
+    const lambdaFunction = this.createLambdaFunction({
+      eventBus,
+      queue,
+      topic,
+      table,
+    });
 
     new events.Rule(this, 'queue-rule', {
       eventBus,
@@ -124,9 +129,11 @@ export class XRayTracingStack extends cdk.Stack {
 
   // eslint-disable-next-line max-lines-per-function
   private createLambdaFunction({
+    eventBus,
     topic,
     table,
   }: {
+    eventBus: events.IEventBus;
     queue: sqs.IQueue;
     topic: sns.ITopic;
     table: dynamodb.ITable;
@@ -142,6 +149,7 @@ export class XRayTracingStack extends cdk.Stack {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         TOPIC: topic.topicArn,
         TABLE: table.tableName,
+        EVENT_BUS_NAME: eventBus.eventBusName,
       },
       runtime: lambda.Runtime.NODEJS_20_X,
       tracing: lambda.Tracing.ACTIVE,
@@ -151,6 +159,7 @@ export class XRayTracingStack extends cdk.Stack {
     // lambdaFunction.logGroup?.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     table.grantReadWriteData(lambdaFunction);
     topic.grantPublish(lambdaFunction);
+    eventBus.grantPutEventsTo(lambdaFunction);
 
     return lambdaFunction;
   }
