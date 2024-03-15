@@ -26,7 +26,6 @@ export class XRayTracingStack extends cdk.Stack {
         tracingEnabled: true,
       },
     });
-    // const api = new apigatewayv2.HttpApi(this, 'rest-api', {});
 
     const { eventBus } = this.createEventBus();
     this.forwardPostRequests(api, eventBus);
