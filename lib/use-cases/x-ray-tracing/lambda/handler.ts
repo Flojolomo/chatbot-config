@@ -37,7 +37,7 @@ class Lambda implements LambdaInterface {
         TableName: process.env.TABLE!,
         Item: {
           id: { S: v4() },
-          body: { S: _event.detail! },
+          body: { S: JSON.stringify(_event.detail!) },
         },
       }),
     );
@@ -48,9 +48,8 @@ class Lambda implements LambdaInterface {
           {
             Source: 'application.lambda',
             DetailType: 'transformed',
-            Detail: _event.detail!,
-            EventBusName: 'STRING_VALUE',
-            TraceHeader: 'STRING_VALUE',
+            Detail: JSON.stringify(_event.detail!),
+            EventBusName: process.env.EVENT_BUS_NAME!,
           },
         ],
       }),
