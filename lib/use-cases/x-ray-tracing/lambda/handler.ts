@@ -8,12 +8,16 @@ import {
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { SQSEvent, SQSRecord } from 'aws-lambda';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { v4 } from 'uuid';
 
 const logger = new Logger({});
 const tracer = new Tracer({});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 tracer.captureAWS(require('aws-sdk'));
+
+const dynamodbClient = new DynamoDBClient({});
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -33,6 +37,15 @@ class Lambda implements LambdaInterface {
 
   private async recordHandler(record: SQSRecord) {
     logger.info('Processing event', { record });
+    dynamodbClient.send(
+      new PutItemCommand({
+        TableName: process.env.TABLE!,
+        Item: {
+          id: { S: v4() },
+          body: { S: record.body! },
+        },
+      }),
+    );
   }
 }
 
