@@ -36,7 +36,7 @@ export class XRayTracingStack extends cdk.Stack {
       eventBus,
       eventPattern: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        source: [{ prefix: '' } as any],
+        source: [{ prefix: 'aws.api.rest' } as any],
       },
     }).addTarget(new eventTargets.SqsQueue(queue));
 
@@ -187,7 +187,7 @@ export class XRayTracingStack extends cdk.Stack {
               "Detail": "$util.escapeJavaScript($input.body)",
               "DetailType": "request",
               "EventBusName": "${eventBus.eventBusName}",
-              "Source":"cdk.application.api.rest"
+              "Source":"aws.api.rest"
             }
           ]
         }
