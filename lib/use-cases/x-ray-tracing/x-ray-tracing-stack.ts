@@ -50,7 +50,7 @@ export class XRayTracingStack extends cdk.Stack {
       eventBus,
       eventPattern: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        source: [{ prefix: XRayTracingStack.API_SOURCE } as any],
+        source: [XRayTracingStack.API_SOURCE, 'transformed'],
       },
     }).addTarget(new eventTargets.LambdaFunction(lambdaFunction));
 

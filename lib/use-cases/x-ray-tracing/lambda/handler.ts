@@ -48,7 +48,10 @@ class Lambda implements LambdaInterface {
           {
             Resources: [],
             Source: 'application.lambda',
-            DetailType: 'transformed',
+            DetailType:
+              _event['detail-type'] === 'transformed'
+                ? 'finish'
+                : 'transformed',
             Detail: JSON.stringify(_event.detail!),
             EventBusName: process.env.EVENT_BUS_NAME!,
           },
