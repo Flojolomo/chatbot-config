@@ -15,9 +15,7 @@ const logger = new Logger({});
 const tracer = new Tracer({});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-tracer.captureAWS(require('aws-sdk'));
-
-const dynamodbClient = new DynamoDBClient({});
+const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -37,6 +35,7 @@ class Lambda implements LambdaInterface {
 
   private async recordHandler(record: SQSRecord) {
     logger.info('Processing event', { record });
+
     await dynamodbClient.send(
       new PutItemCommand({
         TableName: process.env.TABLE!,
