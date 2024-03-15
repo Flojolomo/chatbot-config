@@ -46,6 +46,7 @@ class Lambda implements LambdaInterface {
       new PutEventsCommand({
         Entries: [
           {
+            Resources: [],
             Source: 'application.lambda',
             DetailType: 'transformed',
             Detail: JSON.stringify(_event.detail!),
