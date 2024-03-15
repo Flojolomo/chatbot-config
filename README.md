@@ -22,6 +22,9 @@ To achieve this, some steps are required:
 
 - Can I spin up the chatbot in another region?
 - Datadog Integration, evtl mit Alerts
+- Show one diff per stack
+- List stacks
+- Matrix strategy
 
 ## Notes
 
