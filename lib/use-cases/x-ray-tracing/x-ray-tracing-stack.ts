@@ -11,6 +11,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
 import path = require('path');
 import * as sns from 'aws-cdk-lib/aws-sns'; // Import the missing sns module
+import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 
 // Import the missing iam module
 // TODO open API Spec
@@ -30,27 +31,19 @@ export class XRayTracingStack extends cdk.Stack {
     const { eventBus } = this.createEventBus();
     this.forwardPostRequests(api, eventBus);
 
-    new sqs.Queue(this, 'queue', {});
+    const queue = new sqs.Queue(this, 'queue', {});
+    new events.Rule(this, 'queue-rule', {}).addTarget(
+      new eventTargets.SqsQueue(queue),
+    );
 
-    new lambdaNodeJs.NodejsFunction(this, 'lambda', {
-      entry: path.join(__dirname, 'lambda', 'handler.ts'),
-      environment: {
-        POWERTOOLS_SERVICE_NAME: 'x-ray-showcase',
-        POWERTOOLS_TRACE_ENABLED: String(true),
-        POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: String(true),
-        POWERTOOLS_TRACER_CAPTURE_RESPONSE: String(true),
-        POWERTOOLS_TRACER_CAPTURE_ERROR: String(true),
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-      },
-      runtime: lambda.Runtime.NODEJS_20_X,
-      tracing: lambda.Tracing.ACTIVE,
-    });
-
-    new sns.Topic(this, 'topic', {});
-    new dynamodb.Table(this, 'table', {
+    const topic = new sns.Topic(this, 'topic', {});
+    const table = new dynamodb.Table(this, 'table', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
+
+    this.createLambdaFunction({ queue, topic, table });
+    // Can we trace dynamodb streams?
   }
 
   // eslint-disable-next-line max-lines-per-function
@@ -121,6 +114,36 @@ export class XRayTracingStack extends cdk.Stack {
     const { logGroup } = this.forwardEventsToLogGroup(eventBus);
 
     return { eventBus, logGroup };
+  }
+
+  private createLambdaFunction({
+    queue,
+    topic,
+    table,
+  }: {
+    queue: sqs.IQueue;
+    topic: sns.ITopic;
+    table: dynamodb.ITable;
+  }): lambda.Function {
+    const lambdaFunction = new lambdaNodeJs.NodejsFunction(this, 'lambda', {
+      entry: path.join(__dirname, 'lambda', 'handler.ts'),
+      environment: {
+        POWERTOOLS_SERVICE_NAME: 'x-ray-showcase',
+        POWERTOOLS_TRACE_ENABLED: String(true),
+        POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: String(true),
+        POWERTOOLS_TRACER_CAPTURE_RESPONSE: String(true),
+        POWERTOOLS_TRACER_CAPTURE_ERROR: String(true),
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        TOPIC: topic.topicArn,
+        TABLE: table.tableName,
+      },
+      runtime: lambda.Runtime.NODEJS_20_X,
+      tracing: lambda.Tracing.ACTIVE,
+    });
+
+    lambdaFunction.addEventSource(new lambdaEventSources.SqsEventSource(queue));
+
+    return lambdaFunction;
   }
 
   // eslint-disable-next-line max-lines-per-function
