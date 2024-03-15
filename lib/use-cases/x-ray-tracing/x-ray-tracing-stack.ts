@@ -11,7 +11,6 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
 import path = require('path');
 import * as sns from 'aws-cdk-lib/aws-sns'; // Import the missing sns module
-import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 
 // Import the missing iam module
 // TODO open API Spec
@@ -33,13 +32,6 @@ export class XRayTracingStack extends cdk.Stack {
     this.forwardPostRequests(api, eventBus);
 
     const queue = new sqs.Queue(this, 'queue', {});
-    new events.Rule(this, 'queue-rule', {
-      eventBus,
-      eventPattern: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        source: [{ prefix: XRayTracingStack.API_SOURCE } as any],
-      },
-    }).addTarget(new eventTargets.SqsQueue(queue));
 
     const topic = new sns.Topic(this, 'topic', {});
     const table = new dynamodb.Table(this, 'table', {
@@ -47,7 +39,16 @@ export class XRayTracingStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    this.createLambdaFunction({ queue, topic, table });
+    const lambdaFunction = this.createLambdaFunction({ queue, topic, table });
+
+    new events.Rule(this, 'queue-rule', {
+      eventBus,
+      eventPattern: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        source: [{ prefix: XRayTracingStack.API_SOURCE } as any],
+      },
+    }).addTarget(new eventTargets.LambdaFunction(lambdaFunction));
+
     // Can we trace dynamodb streams?
   }
 
@@ -123,7 +124,6 @@ export class XRayTracingStack extends cdk.Stack {
 
   // eslint-disable-next-line max-lines-per-function
   private createLambdaFunction({
-    queue,
     topic,
     table,
   }: {
@@ -151,7 +151,6 @@ export class XRayTracingStack extends cdk.Stack {
     // lambdaFunction.logGroup?.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     table.grantReadWriteData(lambdaFunction);
     topic.grantPublish(lambdaFunction);
-    lambdaFunction.addEventSource(new lambdaEventSources.SqsEventSource(queue));
 
     return lambdaFunction;
   }
