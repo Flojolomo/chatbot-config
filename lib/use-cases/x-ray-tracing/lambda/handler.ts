@@ -45,7 +45,10 @@ class Lambda implements LambdaInterface {
       new PutEventsCommand({
         Entries: [
           {
-            Source: 'application.lambda',
+            Source:
+              _event.source === 'application.lambda'
+                ? 'none'
+                : 'application.lambda',
             DetailType:
               _event['detail-type'] === 'transformed'
                 ? 'finish'
