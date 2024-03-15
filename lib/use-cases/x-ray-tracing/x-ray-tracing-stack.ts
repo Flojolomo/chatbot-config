@@ -140,6 +140,7 @@ export class XRayTracingStack extends cdk.Stack {
       },
       runtime: lambda.Runtime.NODEJS_20_X,
       tracing: lambda.Tracing.ACTIVE,
+      logRetention: logs.RetentionDays.ONE_DAY,
     });
 
     lambdaFunction.logGroup?.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
