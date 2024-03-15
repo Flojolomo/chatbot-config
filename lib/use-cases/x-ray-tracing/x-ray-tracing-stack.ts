@@ -17,6 +17,7 @@ import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 // TODO open API Spec
 //aws.amazon.com/blogs/compute/using-aws-x-ray-tracing-with-amazon-eventbridge/
 export class XRayTracingStack extends cdk.Stack {
+  private static readonly API_SOURCE = 'api.rest.public';
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -36,7 +37,7 @@ export class XRayTracingStack extends cdk.Stack {
       eventBus,
       eventPattern: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        source: [{ prefix: 'aws.api.rest' } as any],
+        source: [{ prefix: XRayTracingStack.API_SOURCE } as any],
       },
     }).addTarget(new eventTargets.SqsQueue(queue));
 
@@ -187,7 +188,7 @@ export class XRayTracingStack extends cdk.Stack {
               "Detail": "$util.escapeJavaScript($input.body)",
               "DetailType": "request",
               "EventBusName": "${eventBus.eventBusName}",
-              "Source":"aws.api.rest"
+              "Source":"${XRayTracingStack.API_SOURCE}"
             }
           ]
         }
