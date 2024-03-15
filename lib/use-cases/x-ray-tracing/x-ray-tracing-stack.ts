@@ -147,7 +147,7 @@ export class XRayTracingStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_DAY,
     });
 
-    lambdaFunction.logGroup?.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+    // lambdaFunction.logGroup?.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     table.grantReadWriteData(lambdaFunction);
     topic.grantPublish(lambdaFunction);
     lambdaFunction.addEventSource(new lambdaEventSources.SqsEventSource(queue));
