@@ -2,7 +2,7 @@ import { Tracer } from '@aws-lambda-powertools/tracer';
 import { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 
 import { Logger } from '@aws-lambda-powertools/logger';
-import { APIGatewayEvent } from 'aws-lambda';
+import { APIGatewayEvent, ProxyResult } from 'aws-lambda';
 // import { PutEventsCommand } from '@aws-sdk/client-cloudwatch-events';
 import {
   EventBridgeClient,
@@ -24,7 +24,7 @@ class Lambda implements LambdaInterface {
     _event: APIGatewayEvent,
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     _context: unknown,
-  ): Promise<void> {
+  ): Promise<ProxyResult> {
     logger.info('This is an INFO log with some context');
 
     await eventBusClient.send(
@@ -39,6 +39,11 @@ class Lambda implements LambdaInterface {
         ],
       }),
     );
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'success' }),
+    };
   }
 }
 
