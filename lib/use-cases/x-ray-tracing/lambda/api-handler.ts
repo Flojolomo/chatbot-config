@@ -27,7 +27,7 @@ class Lambda implements LambdaInterface {
   ): Promise<ProxyResult> {
     logger.info('This is an INFO log with some context');
 
-    await eventBusClient.send(
+    const response = await eventBusClient.send(
       new PutEventsCommand({
         Entries: [
           {
@@ -42,7 +42,7 @@ class Lambda implements LambdaInterface {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'success' }),
+      body: JSON.stringify({ response }),
     };
   }
 }
