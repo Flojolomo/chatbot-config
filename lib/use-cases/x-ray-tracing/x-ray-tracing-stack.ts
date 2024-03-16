@@ -153,7 +153,6 @@ export class XRayTracingStack extends cdk.Stack {
   // eslint-disable-next-line max-lines-per-function
   private createLambdaFunction({
     eventBus,
-    queue,
     topic,
     table,
   }: {
@@ -184,7 +183,6 @@ export class XRayTracingStack extends cdk.Stack {
     table.grantReadWriteData(lambdaFunction);
     topic.grantPublish(lambdaFunction);
     eventBus.grantPutEventsTo(lambdaFunction);
-    lambdaFunction.addEventSource(new lambdaEventSources.SqsEventSource(queue));
 
     return lambdaFunction;
   }
