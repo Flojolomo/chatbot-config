@@ -12,6 +12,8 @@ import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
 import path = require('path');
 import * as sns from 'aws-cdk-lib/aws-sns'; // Import the missing sns module
 
+// Warum wird der Request des API Gateways nicht getraced?
+// Vermutlich hängt das mit dem Transformer zusammen.
 // Import the missing iam module
 // TODO open API Spec
 //aws.amazon.com/blogs/compute/using-aws-x-ray-tracing-with-amazon-eventbridge/
@@ -29,7 +31,8 @@ export class XRayTracingStack extends cdk.Stack {
     });
 
     const { eventBus } = this.createEventBus();
-    this.forwardPostRequests(api, eventBus);
+    this.forwardPostRequests({ api, eventBus });
+    this.forwardPostRequestsViaLambda({ api, eventBus });
 
     const queue = new sqs.Queue(this, 'queue', {});
 
@@ -58,10 +61,13 @@ export class XRayTracingStack extends cdk.Stack {
   }
 
   // eslint-disable-next-line max-lines-per-function
-  private forwardPostRequests(
-    api: apigateway.IRestApi,
-    eventBus: events.IEventBus,
-  ) {
+  private forwardPostRequests({
+    api,
+    eventBus,
+  }: {
+    api: apigateway.IRestApi;
+    eventBus: events.IEventBus;
+  }) {
     // IAM Role for API Gateway to publish to EventBridge
     const apiGatewayRole = new iam.Role(this, 'ApiGatewayRole', {
       assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
@@ -71,28 +77,9 @@ export class XRayTracingStack extends cdk.Stack {
     eventBus.grantPutEventsTo(apiGatewayRole);
 
     // Integration options for connecting the API Gateway to EventBridge
-    const eventBusIntegration = this.createIntegration({
+    const eventBusIntegration = this.createEventBusIntegration({
       role: apiGatewayRole,
       eventBus,
-    });
-
-    // Define the mock integration response
-    const mockIntegration = new apigateway.MockIntegration({
-      integrationResponses: [
-        {
-          statusCode: '200',
-          responseTemplates: {
-            'application/json': JSON.stringify({
-              message: 'This is a mock response',
-              success: true,
-            }),
-          },
-        },
-      ],
-      requestTemplates: {
-        'application/json': '{"statusCode": 200}',
-      },
-      passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
     });
 
     // Define the method response
@@ -103,18 +90,51 @@ export class XRayTracingStack extends cdk.Stack {
       },
     };
 
-    api.root.addMethod('GET', mockIntegration, {
-      methodResponses: [methodResponse],
-    });
-
     // const options = { methodResponses: [{ statusCode: '200' }] };
     api.root.addResource('event').addMethod('POST', eventBusIntegration, {
       methodResponses: [methodResponse],
     });
+  }
 
-    // const events = api.root.addResource('event');
+  // eslint-disable-next-line max-lines-per-function
+  private forwardPostRequestsViaLambda({
+    api,
+    eventBus,
+  }: {
+    api: apigateway.IRestApi;
+    eventBus: events.IEventBus;
+  }) {
+    const lambdaFunction = new lambdaNodeJs.NodejsFunction(this, 'lambda', {
+      entry: path.join(__dirname, 'lambda', 'handler.ts'),
+      environment: {
+        POWERTOOLS_SERVICE_NAME: 'x-ray-showcase',
+        POWERTOOLS_TRACE_ENABLED: String(true),
+        POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: String(true),
+        POWERTOOLS_TRACER_CAPTURE_RESPONSE: String(true),
+        POWERTOOLS_TRACER_CAPTURE_ERROR: String(true),
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        EVENT_BUS_NAME: eventBus.eventBusName,
+      },
+      runtime: lambda.Runtime.NODEJS_20_X,
+      tracing: lambda.Tracing.ACTIVE,
+      logRetention: logs.RetentionDays.ONE_DAY,
+    });
 
-    // events.addMethod('POST', eventBridgeIntegration, options);
+    eventBus.grantPutEventsTo(lambdaFunction);
+
+    // Define the method response
+    const methodResponse = {
+      statusCode: '200',
+      responseModels: {
+        'application/json': apigateway.Model.EMPTY_MODEL,
+      },
+    };
+
+    api.root
+      .addResource('event-via-lambda')
+      .addMethod('POST', new apigateway.LambdaIntegration(lambdaFunction), {
+        methodResponses: [methodResponse],
+      });
   }
 
   private createEventBus(): {
@@ -165,7 +185,7 @@ export class XRayTracingStack extends cdk.Stack {
   }
 
   // eslint-disable-next-line max-lines-per-function
-  private createIntegration({
+  private createEventBusIntegration({
     eventBus,
     role,
   }: {
