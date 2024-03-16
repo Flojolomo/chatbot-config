@@ -11,6 +11,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
 import path = require('path');
 import * as sns from 'aws-cdk-lib/aws-sns'; // Import the missing sns module
+import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 
 // Warum wird der Request des API Gateways nicht getraced?
 // Vermutlich hängt das mit dem Transformer zusammen.
@@ -19,6 +20,7 @@ import * as sns from 'aws-cdk-lib/aws-sns'; // Import the missing sns module
 //aws.amazon.com/blogs/compute/using-aws-x-ray-tracing-with-amazon-eventbridge/
 export class XRayTracingStack extends cdk.Stack {
   private static readonly API_SOURCE = 'api.rest.public';
+  // eslint-disable-next-line max-lines-per-function
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -55,7 +57,8 @@ export class XRayTracingStack extends cdk.Stack {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         source: [XRayTracingStack.API_SOURCE, 'application.lambda'],
       },
-    }).addTarget(new eventTargets.LambdaFunction(lambdaFunction));
+    }).addTarget(new eventTargets.SqsQueue(queue));
+    lambdaFunction.addEventSource(new lambdaEventSources.SqsEventSource(queue));
 
     // Can we trace dynamodb streams?
   }
