@@ -37,13 +37,6 @@ export class XRayTracingStack extends cdk.Stack {
     this.forwardPostRequestsViaLambda({ api, eventBus });
 
     const queue = new sqs.Queue(this, 'queue', {});
-    new events.Rule(this, 'queue-rule', {
-      eventBus,
-      eventPattern: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        source: [{ prefix: XRayTracingStack.API_SOURCE } as any],
-      },
-    }).addTarget(new eventTargets.SqsQueue(queue));
 
     const topic = new sns.Topic(this, 'topic', {});
     const table = new dynamodb.Table(this, 'table', {
