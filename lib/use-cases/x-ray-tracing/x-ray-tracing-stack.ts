@@ -104,8 +104,8 @@ export class XRayTracingStack extends cdk.Stack {
     api: apigateway.IRestApi;
     eventBus: events.IEventBus;
   }) {
-    const lambdaFunction = new lambdaNodeJs.NodejsFunction(this, 'lambda', {
-      entry: path.join(__dirname, 'lambda', 'handler.ts'),
+    const lambdaFunction = new lambdaNodeJs.NodejsFunction(this, 'api-lambda', {
+      entry: path.join(__dirname, 'lambda', 'api-handler.ts'),
       environment: {
         POWERTOOLS_SERVICE_NAME: 'x-ray-showcase',
         POWERTOOLS_TRACE_ENABLED: String(true),
