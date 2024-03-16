@@ -31,8 +31,8 @@ class Lambda implements LambdaInterface {
       new PutEventsCommand({
         Entries: [
           {
-            Source: 'api.rest.lambda',
-            DetailType: 'request',
+            Source: 'api.rest.public',
+            DetailType: 'lambda-procesed',
             Detail: JSON.stringify(_event.body),
             EventBusName: process.env.EVENT_BUS_NAME!,
           },
