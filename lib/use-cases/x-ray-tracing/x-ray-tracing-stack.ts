@@ -13,7 +13,7 @@ import path = require('path');
 import * as sns from 'aws-cdk-lib/aws-sns'; // Import the missing sns module
 import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 
-// Warum wird der Request des API Gateways nicht getraced?
+// TODO event stream
 // Vermutlich hängt das mit dem Transformer zusammen.
 // Import the missing iam module
 // TODO open API Spec
