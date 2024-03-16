@@ -33,7 +33,7 @@ class Lambda implements LambdaInterface {
           {
             Source: 'api.rest.public',
             DetailType: 'lambda-procesed',
-            Detail: JSON.stringify(_event.body),
+            Detail: JSON.stringify(JSON.parse(_event.body!)),
             EventBusName: process.env.EVENT_BUS_NAME!,
           },
         ],
