@@ -4,6 +4,8 @@ import { LambdaFunction } from './lambda-function';
 import path = require('path');
 import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources'; // Import the missing module
 import * as sns from 'aws-cdk-lib/aws-sns'; // Import the missing module
+import * as events from 'aws-cdk-lib/aws-events'; // Import the missing module
+import * as eventTargets from 'aws-cdk-lib/aws-events-targets'; // Import the missing module
 
 export class BufferedPipeline extends Construct {
   private readonly insertionQueue: sqs.Queue;
@@ -36,5 +38,20 @@ export class BufferedPipeline extends Construct {
     target.grantPublish(processingHandler);
 
     this.insertionQueue = insertionQueue;
+  }
+
+  public subscribeToEventBus({
+    eventBus,
+    sources,
+  }: {
+    eventBus: events.IEventBus;
+    sources: string[];
+  }) {
+    new events.Rule(this, 'event-bus-rule', {
+      eventBus,
+      eventPattern: {
+        source: sources,
+      },
+    }).addTarget(new eventTargets.SqsQueue(this.insertionQueue));
   }
 }

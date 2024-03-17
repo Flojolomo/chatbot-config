@@ -40,8 +40,11 @@ export class XRayTracingStack extends cdk.Stack {
       path: 'lambda-event', // Should be /lambda-event
     });
 
-    new BufferedPipeline(this, 'buffered-pipeline');
-
+    const bufferedPipeline = new BufferedPipeline(this, 'buffered-pipeline');
+    bufferedPipeline.subscribeToEventBus({
+      eventBus: eventBus.eventBus,
+      sources: ['api.rest.public'],
+    });
     // this.createBufferedProcessingPipeline({ eventBus });
 
     // Can we trace dynamodb streams?
@@ -82,12 +85,4 @@ export class XRayTracingStack extends cdk.Stack {
   //       // TOPIC_ARN: topic.topicArn,
   //     },
   //   });
-
-  //   new events.Rule(this, 'lambda-rule', {
-  //     eventBus,
-  //     eventPattern: {
-  //       source: [XRayTracingStack.API_SOURCE],
-  //     },
-  //   }).addTarget(new eventTargets.LambdaFunction(handler));
-  // }
 }
