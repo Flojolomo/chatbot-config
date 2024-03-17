@@ -1,8 +1,9 @@
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway'; // Import the necessary module
 import * as iam from 'aws-cdk-lib/aws-iam'; // Import the necessary module
-import * as events from 'aws-cdk-lib/aws-events'; // Import the necessary module
+// Import the necessary module
 import * as lambda from 'aws-cdk-lib/aws-lambda'; // Import the necessary module
+import { EventBus } from './event-bus';
 
 export class Api extends Construct {
   public readonly api: apigateway.RestApi;
@@ -30,7 +31,7 @@ export class Api extends Construct {
     path,
     source,
   }: {
-    eventBus: events.IEventBus;
+    eventBus: EventBus;
     path: string;
     source: string;
   }) {
@@ -77,7 +78,7 @@ export class Api extends Construct {
     role,
     source,
   }: {
-    eventBus: events.IEventBus;
+    eventBus: EventBus;
     role: iam.IRole;
     source: string;
   }): apigateway.AwsIntegration {

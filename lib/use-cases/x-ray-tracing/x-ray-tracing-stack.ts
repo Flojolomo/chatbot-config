@@ -13,13 +13,11 @@ import { Api } from './api';
 // TODO open API Spec
 //aws.amazon.com/blogs/compute/using-aws-x-ray-tracing-with-amazon-eventbridge/
 export class XRayTracingStack extends cdk.Stack {
-  private static readonly API_SOURCE = 'api.rest.public';
-  // eslint-disable-next-line max-lines-per-function
   public constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const api = new Api(this, 'api');
-    const { eventBus } = new EventBus(this, 'event-bus');
+    const eventBus = new EventBus(this, 'event-bus');
     const { handler: apiRequestHandler } = new LambdaFunction(
       this,
       'api-request-handler',
@@ -30,6 +28,8 @@ export class XRayTracingStack extends cdk.Stack {
         },
       },
     );
+
+    eventBus.grantPutEventsTo(apiRequestHandler);
 
     api.sendPostToEventBus({
       eventBus,
