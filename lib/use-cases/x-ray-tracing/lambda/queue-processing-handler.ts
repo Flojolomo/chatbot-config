@@ -38,7 +38,6 @@ class Lambda implements LambdaInterface {
       new PublishCommand({
         TopicArn: process.env.TOPIC_ARN!,
         Message: JSON.stringify(body),
-        MessageStructure: 'json',
       }),
     );
   }
