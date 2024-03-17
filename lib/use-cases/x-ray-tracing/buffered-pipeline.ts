@@ -35,8 +35,11 @@ export class BufferedPipeline extends Construct {
       },
     });
 
-    target.grantPublish(processingHandler);
+    processingHandler.addEventSource(
+      new lambdaEventSources.SqsEventSource(debufferingQueue),
+    );
 
+    target.grantPublish(processingHandler);
     this.insertionQueue = insertionQueue;
   }
 
