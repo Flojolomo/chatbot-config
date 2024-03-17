@@ -6,6 +6,7 @@ import { LambdaFunction } from './lambda-function';
 // Import the missing lambdaEventSources module
 import { EventBus } from './event-bus';
 import { Api } from './api';
+import { BufferedPipeline } from './buffered-pipeline';
 
 // TODO event stream
 // Vermutlich hängt das mit dem Transformer zusammen.
@@ -18,18 +19,14 @@ export class XRayTracingStack extends cdk.Stack {
 
     const api = new Api(this, 'api');
     const eventBus = new EventBus(this, 'event-bus');
-    const { handler: apiRequestHandler } = new LambdaFunction(
-      this,
-      'api-request-handler',
-      {
-        entry: path.join(__dirname, 'lambda', 'api-handler.ts'),
-        environment: {
-          EVENT_BUS_NAME: eventBus.eventBusName,
-        },
+    const requestHandler = new LambdaFunction(this, 'api-request-handler', {
+      entry: path.join(__dirname, 'lambda', 'api-handler.ts'),
+      environment: {
+        EVENT_BUS_NAME: eventBus.eventBusName,
       },
-    );
+    });
 
-    eventBus.grantPutEventsTo(apiRequestHandler);
+    eventBus.grantPutEventsTo(requestHandler);
 
     api.sendPostToEventBus({
       eventBus,
@@ -38,10 +35,12 @@ export class XRayTracingStack extends cdk.Stack {
     });
 
     api.integrateLambda({
-      lambdaFunction: apiRequestHandler,
+      lambdaFunction: requestHandler,
       method: 'POST',
       path: 'lambda-event', // Should be /lambda-event
     });
+
+    new BufferedPipeline(this, 'buffered-pipeline');
 
     // this.createBufferedProcessingPipeline({ eventBus });
 

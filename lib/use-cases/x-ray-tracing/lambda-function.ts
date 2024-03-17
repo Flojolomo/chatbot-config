@@ -11,6 +11,10 @@ type LambdaFunctionProps = {
 export class LambdaFunction extends Construct {
   public readonly handler: lambda.IFunction;
 
+  public get grantPrincipal() {
+    return this.handler.grantPrincipal;
+  }
+
   public constructor(scope: Construct, id: string, props: LambdaFunctionProps) {
     super(scope, id);
 
@@ -29,5 +33,9 @@ export class LambdaFunction extends Construct {
       tracing: lambda.Tracing.ACTIVE,
       logRetention: logs.RetentionDays.ONE_DAY,
     });
+  }
+
+  public addEventSource(source: lambda.IEventSource) {
+    this.handler.addEventSource(source);
   }
 }

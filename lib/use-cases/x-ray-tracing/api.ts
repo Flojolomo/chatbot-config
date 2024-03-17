@@ -2,8 +2,9 @@ import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway'; // Import the necessary module
 import * as iam from 'aws-cdk-lib/aws-iam'; // Import the necessary module
 // Import the necessary module
-import * as lambda from 'aws-cdk-lib/aws-lambda'; // Import the necessary module
+// Import the necessary module
 import { EventBus } from './event-bus';
+import { LambdaFunction } from './lambda-function';
 
 export class Api extends Construct {
   public readonly api: apigateway.RestApi;
@@ -63,13 +64,16 @@ export class Api extends Construct {
     method,
     path,
   }: {
-    lambdaFunction: lambda.IFunction;
+    lambdaFunction: LambdaFunction;
     method: string;
     path: string;
   }): void {
     this.api.root
       .addResource(path)
-      .addMethod(method, new apigateway.LambdaIntegration(lambdaFunction));
+      .addMethod(
+        method,
+        new apigateway.LambdaIntegration(lambdaFunction.handler),
+      );
   }
 
   // eslint-disable-next-line max-lines-per-function

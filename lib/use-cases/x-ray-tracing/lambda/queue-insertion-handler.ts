@@ -8,20 +8,15 @@ import {
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { SQSEvent, SQSRecord } from 'aws-lambda';
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { SQSClient } from '@aws-sdk/client-sqs';
+import { SendMessageCommand } from '@aws-sdk/client-sqs';
 // import { PutEventsCommand } from '@aws-sdk/client-cloudwatch-events';
-import { v4 } from 'uuid';
-import {
-  EventBridgeClient,
-  PutEventsCommand,
-} from '@aws-sdk/client-eventbridge';
 
 const logger = new Logger({});
 const tracer = new Tracer({});
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
-const eventBusClient = tracer.captureAWSv3Client(new EventBridgeClient({}));
+const sqsClient = tracer.captureAWSv3Client(new SQSClient({}));
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -45,30 +40,12 @@ class Lambda implements LambdaInterface {
     logger.info('Processing event', { record });
 
     const body = JSON.parse(record.body!);
-    await dynamodbClient.send(
-      new PutItemCommand({
-        TableName: process.env.TABLE!,
-        Item: {
-          id: { S: v4() },
-          body: { S: record.body! },
-        },
-      }),
-    );
+    logger.info('Will send body to SQS', { body });
 
-    await eventBusClient.send(
-      new PutEventsCommand({
-        Entries: [
-          {
-            Source:
-              body.source === 'application.lambda'
-                ? 'none'
-                : 'application.lambda',
-            DetailType:
-              body['detail-type'] === 'transformed' ? 'finish' : 'transformed',
-            Detail: JSON.stringify(body.detail!),
-            EventBusName: process.env.EVENT_BUS_NAME!,
-          },
-        ],
+    await sqsClient.send(
+      new SendMessageCommand({
+        QueueUrl: process.env.QUEUE_URL!,
+        MessageBody: JSON.stringify(body),
       }),
     );
   }
