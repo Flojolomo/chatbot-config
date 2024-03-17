@@ -123,26 +123,7 @@ export class CloudFormationStackNotification extends Construct {
           cloudformationStackNotificationTopics,
         }),
         updateStacks: this.generatePolicyToUpdateStacks(),
-        // updateStacks:
-        // setSnsTopicPolicy: new iam.PolicyDocument({
-        //   statements: [
-        //     new iam.PolicyStatement({
-        //       sid: 'SnsPermissions',
-        //       actions: ['sns:Publish'],
-        //       resources: cloudformationNotificationTopics.map(
-        //         (topic) => topic.topicArn,
-        //       ),
-        //     }),
-        //     new iam.PolicyStatement({
-        //       sid: 'CloudFormationPermissions',
-        //       actions: [
-        //         'cloudformation:DescribeStacks',
-        //         'cloudformation:UpdateStack',
-        //       ],
-        //       resources: ['*'],
-        //     }),
-        //   ],
-        // }),
+        invokeLambda: this.generatePolicyToInvokeLambda(),
       },
     });
   }
@@ -173,6 +154,18 @@ export class CloudFormationStackNotification extends Construct {
         documentFormat: 'YAML',
       },
     );
+  }
+
+  private generatePolicyToInvokeLambda(): iam.PolicyDocument {
+    return new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({
+          sid: 'InvokeLambda',
+          actions: ['lambda:InvokeFunction'],
+          resources: ['*'],
+        }),
+      ],
+    });
   }
 
   private generatePolicyToUpdateCdkToolkitStack({

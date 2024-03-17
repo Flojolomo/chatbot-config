@@ -10,7 +10,9 @@ To achieve this, some steps are required:
 2. Create Chatbot in us-east-1 including the sns topic
 3. Set up some stacks to compliant & not compliant and see how it performs
 
-## Ideen
+## Tools & Prerequisites
+
+## Ideas
 
 - Semantic versioning based on commit messages
 - Config rule to enforce topic on cloudformation stack updates
@@ -19,6 +21,10 @@ To achieve this, some steps are required:
   Questions:
 
 - Can I spin up the chatbot in another region?
+- Datadog Integration, evtl mit Alerts
+- Show one diff per stack
+- List stacks
+- Matrix strategy
 
 ## Notes
 
@@ -54,3 +60,11 @@ Host profileB
 --use-previous-template \
 --notification-arns "arn:aws:sns:eu-central-1:XXX:ChatbotStack-chatbottopic9B12A7D0-jQeR3rnjEiYZ" \
 --capabilities CAPABILITY_NAMED_IAM | CAPABILITY_IAM
+
+- Traces for API gateway only show up, when called by URL. Tests through the UI don't show the full trace.
+
+## Troubleshooting
+
+### Docker bundling
+
+When `esbuild` is not installed as dependency, `cdk` defaults to docker bundling. The bundling failed with error messages like `ERROR: failed to solve: public.ecr.aws/sam/build-nodejs20.x: pulling from host public.ecr.aws failed with status code [manifests latest]: 403 Forbidden`. It could be resolved by executing `docker logout public.ecr.aws`. The root cause might be expired credentials or using wrong credentials when using `Rancher Desktop`
