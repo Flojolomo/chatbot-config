@@ -37,7 +37,7 @@ class Lambda implements LambdaInterface {
     await snsClient.send(
       new PublishCommand({
         TopicArn: process.env.TOPIC_ARN!,
-        Message: body,
+        Message: JSON.stringify(body),
         MessageStructure: 'json',
       }),
     );
