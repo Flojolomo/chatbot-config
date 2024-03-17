@@ -40,7 +40,7 @@ export class XRayTracingStack extends cdk.Stack {
     api.integrateLambda({
       lambdaFunction: apiRequestHandler,
       method: 'POST',
-      path: 'event',
+      path: 'lambda-event',
     });
 
     // this.createBufferedProcessingPipeline({ eventBus });
