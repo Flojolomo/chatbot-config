@@ -62,14 +62,14 @@ jobs:
         run: |
           stacks=$(yarn cdk list)
           echo $stacks
-          run: echo "{stacks}={\"$stacks\"}" >> $GITHUB_OUTPUT
+          echo "{stacks}={\"$stacks\"}" >> $GITHUB_OUTPUT
 
       - name: Create matrix for stacks
         id: set-matrix
         run: |
           stacks="${{ steps.list-stacks.outputs.stacks }}"
           json_matrix="{\"stack\":["$(echo $stacks | sed 's/ /", "/g' | sed 's/^/"/' | sed 's/$/"/')"]}"
-          run: echo "{matrix}={$json_matrix}" >> $GITHUB_OUTPUT
+          echo "{matrix}={$json_matrix}" >> $GITHUB_OUTPUT
 
   generate_diff:
     needs: list_stacks
