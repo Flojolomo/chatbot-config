@@ -60,6 +60,7 @@ export class DatadogDeploymentRoleStack extends cdk.Stack {
             'health:DescribeEvents',
             'health:DescribeEventDetails',
             'health:DescribeAffectedEntities',
+            'iam:CreateRole',
             'kinesis:List*',
             'kinesis:Describe*',
             'lambda:GetPolicy',
