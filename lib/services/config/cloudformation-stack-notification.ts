@@ -32,7 +32,7 @@ export class CloudFormationStackNotification extends Construct {
       'EnableCloudFormationStackSNSNotification-WithCapabilities';
     this.createSsmRemediationDocument({
       documentName,
-      documentExtension: 'yaml',
+      fileName: 'EnableCloudFormationStackSNSNotification.yaml',
     });
 
     const remediationRole = this.createRoleForRemediation({
@@ -124,43 +124,19 @@ export class CloudFormationStackNotification extends Construct {
           cloudformationStackNotificationTopics,
         }),
         updateStacks: this.generatePolicyToUpdateStacks(),
-        // updateStacks:
-        // setSnsTopicPolicy: new iam.PolicyDocument({
-        //   statements: [
-        //     new iam.PolicyStatement({
-        //       sid: 'SnsPermissions',
-        //       actions: ['sns:Publish'],
-        //       resources: cloudformationNotificationTopics.map(
-        //         (topic) => topic.topicArn,
-        //       ),
-        //     }),
-        //     new iam.PolicyStatement({
-        //       sid: 'CloudFormationPermissions',
-        //       actions: [
-        //         'cloudformation:DescribeStacks',
-        //         'cloudformation:UpdateStack',
-        //       ],
-        //       resources: ['*'],
-        //     }),
-        //   ],
-        // }),
       },
     });
   }
 
   private createSsmRemediationDocument({
     documentName,
-    documentExtension,
+    fileName,
   }: {
     documentName: string;
-    documentExtension: string;
+    fileName: string;
   }): void {
     const documentContent = fs.readFileSync(
-      path.join(
-        __dirname,
-        'ssm-documents',
-        `${documentName}.${documentExtension}`,
-      ),
+      path.join(__dirname, 'ssm-documents', fileName),
       'utf8',
     );
 
