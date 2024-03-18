@@ -62,7 +62,8 @@ jobs:
         run: |
           stacks=$(yarn cdk list)
           echo $stacks
-          echo "{stacks}={\"$stacks\"}" >> $GITHUB_OUTPUT
+          printf -v json_list '["%s"]' "${stacks[@]}"
+          echo "{stacks}={$json_list}" >> $GITHUB_OUTPUT
 
       - name: Create matrix for stacks
         id: set-matrix
