@@ -2362,6 +2362,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cdk-datadog-integration@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "cdk-datadog-integration@npm:2.1.5"
+  peerDependencies:
+    aws-cdk-lib: ^2.56.0
+    constructs: ^10.0.5
+  checksum: 10c0/bcbd0cb4f72b9445de1f1711be2dbd5bff8ec60d70ced996742c5278598ba798c87864391a4ab21f3707db0df9287ed1f0e3859f35b79e08f205640667bb16f4
+  languageName: node
+  linkType: hard
+
 "chalk@npm:5.3.0, chalk@npm:^5.3.0":
   version: 5.3.0
   resolution: "chalk@npm:5.3.0"

@@ -15,4 +15,10 @@ export const config = {
       workspaceId: env.get('SLACK_WORKSPACE_ID').required().asString(),
     },
   },
+  monitoring: {
+    datadog: {
+      externalId: env.get('DATADOG_EXTERNAL_ID').required().asString(),
+      site: env.get('DATADOG_SITE').required().asString(),
+    },
+  },
 };
