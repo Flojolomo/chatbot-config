@@ -103,5 +103,11 @@ export class DatadogDeploymentRoleStack extends cdk.Stack {
         }),
       ],
     });
+
+    new cdk.CfnOutput(this, 'datadog-deployment-role-arn', {
+      value: datadogDeploymentRole.roleArn,
+      description:
+        'Role to be assumed by CloudFormation to deploy datadog integrations',
+    });
   }
 }
