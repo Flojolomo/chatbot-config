@@ -108,6 +108,7 @@ mainSteps:
       NotificationARNs: '{{ CheckCfnSnsLimits.NotificationArnList }}'
       Capabilities:
         - CAPABILITY_NAMED_IAM
+        - CAPABILITY_AUTO_EXPAND
   - description: |
       ## VerificationCfnSnsNotification
       This step verifies that SNS notifications have been enabled on the CloudFormation stack.
