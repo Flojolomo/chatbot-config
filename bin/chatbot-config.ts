@@ -5,6 +5,7 @@ import { OidcProviderStack } from '../lib/services/iam/oidc-provider-stack';
 import { config } from '../lib/config';
 import { ChatbotStack } from '../lib/services/chatbot/chatbot-stack';
 import { ConfigStack } from '../lib/services/config/config-stack';
+import { MonitoringStack } from '../lib/use-cases/monitoring/monitoring-stack';
 
 const app = new cdk.App();
 
@@ -26,4 +27,9 @@ new ConfigStack(app, 'ConfigRuleStack', {
   env,
   cloudformationStackNotificationTopics: [notificationTopic],
   complianceChangeTarget: notificationTopic,
+});
+
+new MonitoringStack(app, 'MonitoringStack', {
+  env,
+  ...config.monitoring.datadog,
 });

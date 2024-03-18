@@ -28,10 +28,11 @@ export class CloudFormationStackNotification extends Construct {
       complianceChangeTarget: props.complianceChangeTarget,
     });
 
-    const documentName = 'EnableCloudFormationStackSNSNotification-WithIam';
+    const documentName =
+      'EnableCloudFormationStackSNSNotification-WithCapabilities';
     this.createSsmRemediationDocument({
       documentName,
-      documentExtension: 'yaml',
+      fileName: 'EnableCloudFormationStackSNSNotification.yaml',
     });
 
     const remediationRole = this.createRoleForRemediation({
@@ -88,7 +89,7 @@ export class CloudFormationStackNotification extends Construct {
         targetType: 'SSM_DOCUMENT',
         automatic: true,
         maximumAutomaticAttempts: 5,
-        retryAttemptSeconds: 60,
+        retryAttemptSeconds: 3600,
         parameters: {
           AutomationAssumeRole: {
             StaticValue: {
@@ -123,49 +124,25 @@ export class CloudFormationStackNotification extends Construct {
           cloudformationStackNotificationTopics,
         }),
         updateStacks: this.generatePolicyToUpdateStacks(),
-        // updateStacks:
-        // setSnsTopicPolicy: new iam.PolicyDocument({
-        //   statements: [
-        //     new iam.PolicyStatement({
-        //       sid: 'SnsPermissions',
-        //       actions: ['sns:Publish'],
-        //       resources: cloudformationNotificationTopics.map(
-        //         (topic) => topic.topicArn,
-        //       ),
-        //     }),
-        //     new iam.PolicyStatement({
-        //       sid: 'CloudFormationPermissions',
-        //       actions: [
-        //         'cloudformation:DescribeStacks',
-        //         'cloudformation:UpdateStack',
-        //       ],
-        //       resources: ['*'],
-        //     }),
-        //   ],
-        // }),
       },
     });
   }
 
   private createSsmRemediationDocument({
     documentName,
-    documentExtension,
+    fileName,
   }: {
     documentName: string;
-    documentExtension: string;
+    fileName: string;
   }): void {
     const documentContent = fs.readFileSync(
-      path.join(
-        __dirname,
-        'ssm-documents',
-        `${documentName}.${documentExtension}`,
-      ),
+      path.join(__dirname, 'ssm-documents', fileName),
       'utf8',
     );
 
     new ssm.CfnDocument(
       this,
-      'cloudformation-stack-notification-remediation-document-with-iam',
+      'stack-notification-remediation-document-with-iam',
       {
         name: documentName,
         content: yaml.load(documentContent),
