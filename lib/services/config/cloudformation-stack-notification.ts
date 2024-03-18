@@ -28,7 +28,8 @@ export class CloudFormationStackNotification extends Construct {
       complianceChangeTarget: props.complianceChangeTarget,
     });
 
-    const documentName = 'EnableCloudFormationStackSNSNotification-WithIam';
+    const documentName =
+      'EnableCloudFormationStackSNSNotification-WithCapabilities';
     this.createSsmRemediationDocument({
       documentName,
       documentExtension: 'yaml',
