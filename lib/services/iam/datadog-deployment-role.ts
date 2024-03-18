@@ -60,7 +60,6 @@ export class DatadogDeploymentRoleStack extends cdk.Stack {
             'health:DescribeEvents',
             'health:DescribeEventDetails',
             'health:DescribeAffectedEntities',
-            'iam:CreateRole',
             'kinesis:List*',
             'kinesis:Describe*',
             'lambda:GetPolicy',
@@ -101,6 +100,11 @@ export class DatadogDeploymentRoleStack extends cdk.Stack {
           ],
           effect: iam.Effect.ALLOW,
           resources: ['*'],
+        }),
+        new iam.PolicyStatement({
+          actions: ['iam:CreateRole', 'iam:AttachRolePolicy'],
+          effect: iam.Effect.ALLOW,
+          resources: ['arn:aws:iam:::role/DatadogIntegration*'],
         }),
       ],
     });
