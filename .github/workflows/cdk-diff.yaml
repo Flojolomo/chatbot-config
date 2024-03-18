@@ -57,6 +57,9 @@ jobs:
           AWS_REGION: ${{ vars.AWS_REGION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+          DATADOG_EXTERNAL_ID: ${{ secrets.DATADOG_EXTERNAL_ID }}
+          DATADOG_SITE: ${{ secrets.DATADOG_SITE }}
+
           SLACK_CHANNEL_CONFIGURATION_NAME: ${{ secrets.SLACK_CHANNEL_CONFIGURATION_NAME }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_WORKSPACE_ID: ${{ secrets.SLACK_WORKSPACE_ID }}
