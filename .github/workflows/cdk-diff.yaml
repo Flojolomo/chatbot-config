@@ -60,16 +60,16 @@ jobs:
       - name: List CDK stacks
         id: list-stacks
         run: |
-          stacks=$(npx cdk list)
+          stacks=$(yarn cdk list)
           echo $stacks
-          echo "::set-output name=stacks::$stacks"
+          run: echo "{stacks}={\"$stacks\"}" >> $GITHUB_OUTPUT
 
       - name: Create matrix for stacks
         id: set-matrix
         run: |
           stacks="${{ steps.list-stacks.outputs.stacks }}"
           json_matrix="{\"stack\":["$(echo $stacks | sed 's/ /", "/g' | sed 's/^/"/' | sed 's/$/"/')"]}"
-          echo "::set-output name=matrix::$json_matrix"
+          run: echo "{matrix}={$json_matrix}" >> $GITHUB_OUTPUT
 
   generate_diff:
     needs: list_stacks
