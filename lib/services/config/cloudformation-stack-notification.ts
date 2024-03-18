@@ -88,7 +88,7 @@ export class CloudFormationStackNotification extends Construct {
         targetType: 'SSM_DOCUMENT',
         automatic: true,
         maximumAutomaticAttempts: 5,
-        retryAttemptSeconds: 60,
+        retryAttemptSeconds: 3600,
         parameters: {
           AutomationAssumeRole: {
             StaticValue: {
