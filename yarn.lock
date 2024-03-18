@@ -2419,6 +2419,7 @@ __metadata:
     aws-cdk: "npm:2.131.0"
     aws-cdk-github-oidc: "npm:^2.4.1"
     aws-cdk-lib: "npm:2.131.0"
+    cdk-datadog-integration: "npm:^2.1.5"
     constructs: "npm:^10.0.0"
     env-var: "npm:^7.4.1"
     eslint: "npm:^8.57.0"
