@@ -55,4 +55,4 @@ Host profileB
 --notification-arns "arn:aws:sns:eu-central-1:XXX:ChatbotStack-chatbottopic9B12A7D0-jQeR3rnjEiYZ" \
 --capabilities CAPABILITY_NAMED_IAM | CAPABILITY_IAM
 
-- Could not set up datadog without manual intervention to satisfy config rule
+- Could not set up datadog without manual intervention to satisfy config rule, even with cdk role that had AdminFullAccess permissions
