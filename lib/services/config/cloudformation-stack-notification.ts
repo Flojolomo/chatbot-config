@@ -165,7 +165,7 @@ export class CloudFormationStackNotification extends Construct {
 
     new ssm.CfnDocument(
       this,
-      'cloudformation-stack-notification-remediation-document-with-iam',
+      'stack-notification-remediation-document-with-iam',
       {
         name: documentName,
         content: yaml.load(documentContent),
