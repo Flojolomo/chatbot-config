@@ -18,9 +18,54 @@ permissions:
   pull-requests: write # This is required for creating a pull request
 
 jobs:
+  list_stacks:
+    name: List Stacks
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Merge main
+        run: |
+          git config --global user.email "github-action-user@bot.com"
+          git config --global user.name "GitHub Action Bot"
+          git fetch origin main
+          git merge origin/main
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: List CDK stacks
+        id: list-stacks
+        run: |
+          stacks=$(npx cdk list)
+          echo $stacks
+          echo "::set-output name=stacks::$stacks"
+
+      - name: Create matrix for stacks
+        id: set-matrix
+        run: |
+          stacks="${{ steps.list-stacks.outputs.stacks }}"
+          json_matrix="{\"stack\":["$(echo $stacks | sed 's/ /", "/g' | sed 's/^/"/' | sed 's/$/"/')"]}"
+          echo "::set-output name=matrix::$json_matrix"
+
   generate_diff:
+    needs: list_stacks
     name: Generate CDK Diff
     runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.list_stacks.outputs.matrix)}}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,3 +112,4 @@ jobs:
         with:
           cdk_subcommand: 'diff'
           actions_comment: true
+          cdk_stack: ${{ matrix.stack }}
