@@ -17,10 +17,68 @@ permissions:
   contents: read # This is required for actions/checkout
   pull-requests: write # This is required for creating a pull request
 
+env:
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  DATADOG_EXTERNAL_ID: ${{ secrets.DATADOG_EXTERNAL_ID }}
+  DATADOG_SITE: ${{ secrets.DATADOG_SITE }}
+
+  SLACK_CHANNEL_CONFIGURATION_NAME: ${{ secrets.SLACK_CHANNEL_CONFIGURATION_NAME }}
+  SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+  SLACK_WORKSPACE_ID: ${{ secrets.SLACK_WORKSPACE_ID }}
+
 jobs:
+  list_stacks:
+    name: List Stacks
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Merge main
+        run: |
+          git config --global user.email "github-action-user@bot.com"
+          git config --global user.name "GitHub Action Bot"
+          git fetch origin main
+          git merge origin/main
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: List CDK stacks
+        id: list-stacks
+        run: |
+          stacks=$(yarn cdk list)
+          echo $stacks
+          printf -v json_list '["%s"]' "${stacks[@]}"
+          echo "{stacks}={$json_list}" >> $GITHUB_OUTPUT
+
+      - name: Create matrix for stacks
+        id: set-matrix
+        run: |
+          stacks="${{ steps.list-stacks.outputs.stacks }}"
+          json_matrix="{\"stack\":["$(echo $stacks | sed 's/ /", "/g' | sed 's/^/"/' | sed 's/$/"/')"]}"
+          echo "{matrix}={$json_matrix}" >> $GITHUB_OUTPUT
+
   generate_diff:
+    needs: list_stacks
     name: Generate CDK Diff
     runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.list_stacks.outputs.matrix)}}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,3 +125,4 @@ jobs:
         with:
           cdk_subcommand: 'diff'
           actions_comment: true
+          cdk_stack: ${{ matrix.stack }}
